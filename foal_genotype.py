@@ -714,35 +714,37 @@ elif foal_rb_gene == 'RbRb':
 # ========================
     # Combine the selected genes to create the foal's genotype
     foal_genotype = f"{foal_extension_gene}/{foal_agouti_gene}"
-    if foal_silver_gene:
-        foal_genotype += f"/{foal_silver_gene}"
-    if foal_sooty_gene:
-        foal_genotype += f"/{foal_sooty_gene}"
-    if foal_dun_gene:
-        foal_genotype += f"/{foal_dun_gene}"
-    if foal_pangare_gene:
-        foal_genotype += f"/{foal_pangare_gene}"
-    if foal_cream_gene:
-        foal_genotype += f"/{foal_cream_gene}"
-    if foal_champ_gene:
-        foal_genotype += f"/{foal_champ_gene}"
-    if foal_grey_gene:
-        foal_genotype += f"/{foal_grey_gene}"
-    if foal_tobi_gene:
-        foal_genotype += f"/{foal_tobi_gene}"
-    if foal_roan_gene:
-        foal_genotype += f"/{foal_roan_gene}"
-    if foal_sab_gene:
-        foal_genotype += f"/{foal_sab_gene}"
-    if foal_appy_gene:
-        foal_genotype += f"/{foal_appy_gene}"
-    if foal_overo_gene:
-        foal_genotype += f"/{foal_overo_gene}"
-    if foal_merle_gene:
-        foal_genotype += f"/{foal_merle_gene}"
-    if foal_curly_gene:
-        foal_genotype += f"/{foal_curly_gene}"
-    if foal_tabby_gene:
-        foal_genotype += f"/{foal_tabby_gene}"
+if foal_zp_gene:
+    foal_genotype += f"/{foal_zp_gene}"
+if foal_zf_gene:
+    foal_genotype += f"/{foal_zf_gene}"
+if foal_zd_gene:
+    foal_genotype += f"/{foal_zd_gene}"
+if foal_cream_gene:
+    foal_genotype += f"/{foal_cream_gene}"
+if foal_champ_gene:
+    foal_genotype += f"/{foal_champ_gene}"
+if foal_pangare_gene:
+    foal_genotype += f"/{foal_pangare_gene}"
+if foal_sooty_gene:
+    foal_genotype += f"/{foal_sooty_gene}"
+if foal_roan_gene:
+    foal_genotype += f"/{foal_roan_gene}"
+if foal_grey_gene:
+    foal_genotype += f"/{foal_grey_gene}"
+if foal_silver_gene:
+    foal_genotype += f"/{foal_silver_gene}"
+if foal_appy_gene:
+    foal_genotype += f"/{foal_appy_gene}"
+if foal_tobi_gene:
+    foal_genotype += f"/{foal_tobi_gene}"
+if foal_sab_gene:
+    foal_genotype += f"/{foal_sab_gene}"
+if foal_overo_gene:
+    foal_genotype += f"/{foal_overo_gene}"
+if foal_sw_gene:
+    foal_genotype += f"/{foal_sw_gene}"
+if foal_rb_gene:
+    foal_genotype += f"/{foal_rb_gene}"
 
     return foal_genotype
