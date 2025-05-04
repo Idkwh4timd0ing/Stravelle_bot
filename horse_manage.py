@@ -29,9 +29,13 @@ class HorseManagement(commands.Cog):
         embed.add_field(name="Sex", value=horse["sex"], inline=True)
         embed.add_field(name="Registry", value=horse["registry"] or "—", inline=True)
         embed.add_field(name="Genotype", value=horse["genotype"], inline=False)
+        embed.add_field(name="Dam", value=f"#{horse['dam_id']}" if horse["dam_id"] else "Unknown", inline=True)
+        embed.add_field(name="Sire", value=f"#{horse['sire_id']}" if horse["sire_id"] else "Unknown", inline=True)
+        embed.add_field(name="Breeding Slots", value=str(horse.get("slots", "—")), inline=True)
         embed.add_field(name="XP", value=horse["xp"], inline=True)
         embed.add_field(name="Rank", value=horse["rank"], inline=True)
         embed.add_field(name="Ref Link", value=horse["ref_link"] or "No link", inline=False)
+
 
         await ctx.send(embed=embed)
 
