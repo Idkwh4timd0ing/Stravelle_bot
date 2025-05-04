@@ -448,23 +448,23 @@ elif foal_champ_gene == 'ChCh':
 # ========================
     
 if p_position_m is not None and len(mare_genes) > p_position_m:
-        mare_pangare_allele = random.choice([mare_genes[p_position_m][0], mare_genes[p_position_m][1]])      
+    mare_pangare_allele = random.choice([mare_genes[p_position_m][0], mare_genes[p_position_m][1]])      
 else:
-        mare_pangare_allele = ""
+    mare_pangare_allele = ""
 
 if p_position_s is not None and len(stallion_genes) > p_position_s:
-        stallion_pangare_allele = random.choice([stallion_genes[p_position_s][0], stallion_genes[p_position_s][1]])  
+    stallion_pangare_allele = random.choice([stallion_genes[p_position_s][0], stallion_genes[p_position_s][1]])  
 else:
-        stallion_pangare_allele = ""
+    stallion_pangare_allele = ""
 
-    foal_pangare_gene = mare_pangare_allele + stallion_pangare_allele
+foal_pangare_gene = mare_pangare_allele + stallion_pangare_allele
 
 if foal_pangare_gene == 'pp' or foal_pangare_gene == 'p':
-        foal_pangare_gene = ""
+    foal_pangare_gene = ""
 elif foal_pangare_gene == 'Pp' or foal_pangare_gene == 'pP' or foal_pangare_gene == 'P':
-        foal_pangare_gene = "Pp"
+    foal_pangare_gene = "Pp"
 elif foal_pangare_gene == 'PP':
-        foal_pangare_gene = "PP"
+    foal_pangare_gene = "PP"
 
 
 # ========================
@@ -520,23 +520,23 @@ elif foal_roan_gene == 'RnRn':
 # ========================
         
 if g_position_m is not None and len(mare_genes) > g_position_m:
-        mare_grey_allele = random.choice([mare_genes[g_position_m][0], mare_genes[g_position_m][1]])
+    mare_grey_allele = random.choice([mare_genes[g_position_m][0], mare_genes[g_position_m][1]])
 else:
-        mare_grey_allele = ""
+    mare_grey_allele = ""
 
 if g_position_s is not None and len(stallion_genes) > g_position_s:
-        stallion_grey_allele = random.choice([stallion_genes[g_position_s][0], stallion_genes[g_position_s][1]])
+    stallion_grey_allele = random.choice([stallion_genes[g_position_s][0], stallion_genes[g_position_s][1]])
 else:
-        stallion_grey_allele = ""
+    stallion_grey_allele = ""
 
-    foal_grey_gene = mare_grey_allele + stallion_grey_allele
+foal_grey_gene = mare_grey_allele + stallion_grey_allele
 
 if foal_grey_gene == 'gg' or foal_grey_gene == 'g':
-        foal_grey_gene = ""
+    foal_grey_gene = ""
 elif foal_grey_gene == 'Gg' or foal_grey_gene == 'gG' or foal_grey_gene == 'G':
-        foal_grey_gene = "Gg"
+    foal_grey_gene = "Gg"
 elif foal_grey_gene == 'GG':
-        foal_grey_gene = "GG"
+    foal_grey_gene = "GG"
 
 
 # ========================
@@ -592,23 +592,23 @@ elif foal_appy_gene == 'LpLp':
 # ========================
 
 if to_position_m is not None and len(mare_genes) > to_position_m:
-        mare_tobi_allele = random.choice([mare_genes[to_position_m][0:2], mare_genes[to_position_m][2:]])
+    mare_tobi_allele = random.choice([mare_genes[to_position_m][0:2], mare_genes[to_position_m][2:]])
 else:
-        mare_tobi_allele = ""
+    mare_tobi_allele = ""
 
 if to_position_s is not None and len(stallion_genes) > to_position_s:
-        stallion_tobi_allele = random.choice([stallion_genes[to_position_s][0:2], stallion_genes[to_position_s][2:]])
+    stallion_tobi_allele = random.choice([stallion_genes[to_position_s][0:2], stallion_genes[to_position_s][2:]])
 else:
-        stallion_tobi_allele = ""
+    stallion_tobi_allele = ""
 
-    foal_tobi_gene = mare_tobi_allele + stallion_tobi_allele
+foal_tobi_gene = mare_tobi_allele + stallion_tobi_allele
 
 if foal_tobi_gene == 'toto' or foal_tobi_gene == 'to':
-        foal_tobi_gene = ""
+    foal_tobi_gene = ""
 elif foal_tobi_gene == 'Toto' or foal_tobi_gene == 'toTo' or foal_tobi_gene == 'To':
-        foal_tobi_gene = "Toto"
+    foal_tobi_gene = "Toto"
 elif foal_tobi_gene == 'ToTo':
-        foal_tobi_gene = "ToTo"
+    foal_tobi_gene = "ToTo"
     
 
 
@@ -617,23 +617,23 @@ elif foal_tobi_gene == 'ToTo':
 # ========================
 
 if sb_position_m is not None and len(mare_genes) > sb_position_m:
-        mare_sab_allele = random.choice([mare_genes[sb_position_m][0:2], mare_genes[sb_position_m][2:]])
+    mare_sab_allele = random.choice([mare_genes[sb_position_m][0:2], mare_genes[sb_position_m][2:]])
 else:
-        mare_sab_allele = ""
+    mare_sab_allele = ""
 
 if sb_position_s is not None and len(stallion_genes) > sb_position_s:
-        stallion_sab_allele = random.choice([stallion_genes[sb_position_s][0:2], stallion_genes[sb_position_s][2:]])
+    stallion_sab_allele = random.choice([stallion_genes[sb_position_s][0:2], stallion_genes[sb_position_s][2:]])
 else:
-        stallion_sab_allele = ""
+    stallion_sab_allele = ""
 
-    foal_sab_gene = mare_sab_allele + stallion_sab_allele
+foal_sab_gene = mare_sab_allele + stallion_sab_allele
 
 if foal_sab_gene == 'sbsb' or foal_sab_gene == 'sb':
-        foal_sab_gene = ""
+    foal_sab_gene = ""
 elif foal_sab_gene == 'Sbsb' or foal_sab_gene == 'sbSb' or foal_sab_gene == 'Sb':
-        foal_sab_gene = "Sbsb"
+    foal_sab_gene = "Sbsb"
 elif foal_sab_gene == 'SbSb':
-        foal_sab_gene = "SbSb"
+    foal_sab_gene = "SbSb"
 
 
 # ========================
