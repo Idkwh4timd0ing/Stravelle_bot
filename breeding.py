@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from foal_genotype import generate_foal_genotype
-import uuid
+import random
 
 class Breeding(commands.Cog):
     def __init__(self, bot, supabase):
@@ -25,7 +25,7 @@ class Breeding(commands.Cog):
         foal_genotype = generate_foal_genotype(dam["genotype"], sire["genotype"])
 
         # Create a unique foal ID
-        response = supabase.table("horses").select("horse_id").order("horse_id", desc=True).limit(1).execute()
+        response = self.supabase.table("horses").select("horse_id").order("horse_id", desc=True).limit(1).execute()
         
         if response.data:
             last_id = response.data[0]["horse_id"]
