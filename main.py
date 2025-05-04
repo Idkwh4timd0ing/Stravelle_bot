@@ -7,7 +7,6 @@ from discord.ui import Button, View
 from registration import setup as registration_setup
 
 
-registration_setup(bot, supabase)
 
 # Set up Discord bot with prefix '!'
 intents = discord.Intents.default()
@@ -20,6 +19,7 @@ url = os.getenv("SUPABASE_URL")
 key = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
+registration_setup(bot, supabase)
 
 @bot.event
 async def on_ready():
