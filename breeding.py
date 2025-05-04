@@ -17,6 +17,21 @@ def format_genotype(genes: dict) -> str:
     return "/".join([genes[gene] for gene in GENE_ORDER if gene in genes])
 
 
+def parse_genotype(geno: str):
+    parsed = {}
+    parts = geno.split("/")
+
+    for i, part in enumerate(parts):
+        gene = GENE_ORDER[i] if i < len(GENE_ORDER) else None
+        if gene and gene in GENE_STRUCTURE:
+            length = GENE_STRUCTURE[gene]
+            midpoint = length // 2
+            if len(part) == length:
+                parsed[gene] = [part[:midpoint], part[midpoint:]]
+
+    return parsed
+
+
 class Breeding(commands.Cog):
     def __init__(self, bot, supabase):
         self.bot = bot
@@ -34,17 +49,14 @@ class Breeding(commands.Cog):
         dam = dam.data[0]
         sire = sire.data[0]
 
-        # Ownership check
         if str(ctx.author.id) != dam["owner_id"] and str(ctx.author.id) != sire["owner_id"]:
             await ctx.send("❌ You do not own either the dam or sire.")
             return
 
-        # Validate slots
         if dam["slots"] <= 0 or sire["slots"] <= 0:
             await ctx.send("❌ One of these horses has no breeding slots left.")
             return
 
-        # Parse genotypes
         try:
             dam_genes = parse_genotype(dam["genotype"])
             sire_genes = parse_genotype(sire["genotype"])
@@ -53,39 +65,21 @@ class Breeding(commands.Cog):
             await ctx.send("❌ Invalid genotype format.")
             return
 
-        # Create foal genotype
         foal_genes = {}
 
-        for gene in GENE_STRUCTURE:
+        for gene in GENE_ORDER:
             if gene in dam_genes and gene in sire_genes:
                 allele_1 = random.choice(dam_genes[gene])
                 allele_2 = random.choice(sire_genes[gene])
                 foal_genes[gene] = allele_1 + allele_2
 
-        # Build genotype string in the same order
         foal_genotype = format_genotype(foal_genes)
 
-        await ctx.send(f"🍼 Your new foal has genotype: `{foal_genotype}`")
+        await ctx.send(f"🍽️ Your new foal has genotype: `{foal_genotype}`")
 
-        # Optionally deduct slots
+        # Uncomment if slot deduction is needed
         # self.supabase.table("horses").update({"slots": dam["slots"] - 1}).eq("horse_id", dam_id).execute()
         # self.supabase.table("horses").update({"slots": sire["slots"] - 1}).eq("horse_id", sire_id).execute()
-
-
-def parse_genotype(geno: str):
-    parsed = {}
-    parts = geno.split("/")
-
-    for part in parts:
-        if "=" in part:
-            gene, alleles = part.split("=")
-            expected_len = GENE_STRUCTURE.get(gene)
-            if expected_len and len(alleles) == expected_len:
-                midpoint = expected_len // 2
-                parsed[gene] = [alleles[:midpoint], alleles[midpoint:]]
-
-    return parsed
-
 
 
 async def setup(bot, supabase):
