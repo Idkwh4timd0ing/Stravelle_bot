@@ -4,9 +4,9 @@ from supabase import create_client, Client
 import os
 import uuid
 
-# Set up Discord bot
+# Set up Discord bot with prefix '!'
 intents = discord.Intents.default()
-bot = commands.Bot(command_prefix="/", intents=intents)
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Connect to Supabase
 url = os.getenv("SUPABASE_URL")
@@ -16,32 +16,25 @@ supabase: Client = create_client(url, key)
 @bot.event
 async def on_ready():
     print(f"Bot is online as {bot.user}")
-    try:
-        synced = await bot.tree.sync()
-        print(f"Synced {len(synced)} slash command(s).")
-    except Exception as e:
-        print(f"Failed to sync commands: {e}")
 
-@bot.tree.command(name="hello", description="Say hello to the bot!")
-async def hello(interaction: discord.Interaction):
-    print(f"/hello used by {interaction.user}")
-    await interaction.response.send_message(f"Hello, {interaction.user.mention}!")
+@bot.command(name="hello")
+async def hello(ctx):
+    print(f"!hello used by {ctx.author}")
+    await ctx.send(f"Hello, {ctx.author.mention}!")
 
-@bot.tree.command(name="register", description="Register yourself in the database")
-async def register(interaction: discord.Interaction):
-    discord_id = str(interaction.user.id)
-    username = interaction.user.name
+@bot.command(name="register")
+async def register(ctx):
+    discord_id = str(ctx.author.id)
+    username = ctx.author.name
     user_id = str(uuid.uuid4())
 
-    # Check if already registered
     existing = supabase.table("users").select("*").eq("discord_id", discord_id).execute()
     print("User lookup result:", existing.data)
 
     if existing.data and len(existing.data) > 0:
-        await interaction.response.send_message("You're already registered!", ephemeral=True)
+        await ctx.send("You're already registered!")
         return
 
-    # Insert into database
     try:
         supabase.table("users").insert({
             "user_id": user_id,
@@ -49,10 +42,9 @@ async def register(interaction: discord.Interaction):
             "username": username
         }).execute()
 
-        await interaction.response.send_message(f"Registered {username}!", ephemeral=True)
-
+        await ctx.send(f"Registered {username}!")
     except Exception as e:
         print(f"Insert failed: {e}")
-        await interaction.response.send_message("Something went wrong during registration.", ephemeral=True)
+        await ctx.send("Something went wrong during registration.")
 
 bot.run(os.getenv("DISCORD_TOKEN"))
