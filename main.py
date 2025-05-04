@@ -5,6 +5,9 @@ import os
 import uuid
 from discord.ui import Button, View
 from registration import setup as registration_setup
+from horse_manage import setup as manage_setup
+
+
 
 # Set up Discord bot with prefix '!'
 intents = discord.Intents.default()
@@ -24,6 +27,7 @@ async def on_ready():
     
     try:
         await registration_setup(bot, supabase)
+        await manage_setup(bot, supabase)
         print("✅ Registration cog loaded.")
     except Exception as e:
         print(f"❌ Failed to load registration cog: {e}")
