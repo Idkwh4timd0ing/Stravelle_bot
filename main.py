@@ -35,16 +35,26 @@ async def register(interaction: discord.Interaction):
 
     # Check if already registered
     existing = supabase.table("users").select("*").eq("discord_id", discord_id).execute()
+    print("User lookup result:", existing.data)
+
     if existing.data:
         await interaction.response.send_message("You're already registered!", ephemeral=True)
         return
 
     # Insert into database
-    supabase.table("users").insert({
-        "user_id": user_id,
-        "discord_id": discord_id,
-        "username": username
-    }).execute()
+    try:
+        supabase.table("users").insert({
+            "user_id": user_id,
+            "discord_id": discord_id,
+            "username": username
+        }).execute()
+    
+        await interaction.response.send_message(f"Registered {username}!", ephemeral=True)
+
+    except Exception as e:
+        print(f"Insert failed: {e}")
+        await interaction.response.send_message("You're already registered!", ephemeral=True)
+
 
     await interaction.response.send_message(f"Registered {username}!", ephemeral=True)
 
