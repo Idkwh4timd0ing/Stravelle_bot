@@ -37,7 +37,7 @@ async def register(interaction: discord.Interaction):
     existing = supabase.table("users").select("*").eq("discord_id", discord_id).execute()
     print("User lookup result:", existing.data)
 
-    if existing.data:
+    if existing.data and len(existing.data) > 0:
         await interaction.response.send_message("You're already registered!", ephemeral=True)
         return
 
@@ -48,14 +48,11 @@ async def register(interaction: discord.Interaction):
             "discord_id": discord_id,
             "username": username
         }).execute()
-    
+
         await interaction.response.send_message(f"Registered {username}!", ephemeral=True)
 
     except Exception as e:
         print(f"Insert failed: {e}")
-        await interaction.response.send_message("You're already registered!", ephemeral=True)
-
-
-    await interaction.response.send_message(f"Registered {username}!", ephemeral=True)
+        await interaction.response.send_message("Something went wrong during registration.", ephemeral=True)
 
 bot.run(os.getenv("DISCORD_TOKEN"))
