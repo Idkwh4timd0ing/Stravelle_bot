@@ -16,6 +16,7 @@ url = os.getenv("SUPABASE_URL")
 key = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
+
 @bot.event
 async def on_ready():
     print(f"Bot is online as {bot.user}")
@@ -24,32 +25,8 @@ async def on_ready():
 async def hello(ctx):
     print(f"!hello used by {ctx.author}")
     await ctx.send(f"Hello, {ctx.author.mention}!")
-
-@bot.command(name="register")
-async def register(ctx):
-    discord_id = str(ctx.author.id)
-    username = ctx.author.name
-    user_id = str(uuid.uuid4())
-
-    existing = supabase.table("users").select("*").eq("discord_id", discord_id).execute()
-    print("User lookup result:", existing.data)
-
-    if existing.data and len(existing.data) > 0:
-        await ctx.send("You're already registered!")
-        return
-
-    try:
-        supabase.table("users").insert({
-            "user_id": user_id,
-            "discord_id": discord_id,
-            "username": username
-        }).execute()
-
-        await ctx.send(f"Registered {username}!")
-    except Exception as e:
-        print(f"Insert failed: {e}")
-        await ctx.send("Something went wrong during registration.")
-
+    
+# Reaction for member role and registration
 @bot.event
 async def on_raw_reaction_add(payload):
     rules_message_id = 1368584375264084000  # your message ID
@@ -97,6 +74,7 @@ async def on_raw_reaction_add(payload):
         print(f"Failed to auto-register {username}: {e}")
 
 
+# Command to send the agreeing rule message
 @bot.command(name="sendrules")
 @commands.has_permissions(administrator=True)
 async def sendrules(ctx):
@@ -136,5 +114,7 @@ async def sendrules(ctx):
     view.add_item(button)
 
     await ctx.send(embed=embed, view=view)
+
+
 
 bot.run(os.getenv("DISCORD_TOKEN"))
