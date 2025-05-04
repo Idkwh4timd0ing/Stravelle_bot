@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+# Create new import into the database
 class Registration(commands.Cog):
     def __init__(self, bot, supabase):
         self.bot = bot
@@ -42,3 +43,30 @@ class Registration(commands.Cog):
 
 async def setup(bot, supabase):
     await bot.add_cog(Registration(bot, supabase))
+
+
+# Assign horse to its new owner
+# !assignhorse id @user
+@commands.command(name="assignhorse")
+@commands.check(lambda ctx: str(ctx.author.id) == "999697174210289784")
+async def assign_horse(self, ctx, horse_id: int, member: discord.Member):
+    # Check if horse exists
+    existing = self.supabase.table("horses").select("*").eq("horse_id", horse_id).execute()
+    if not existing.data:
+        await ctx.send(f"❌ Horse ID {horse_id} not found.")
+        return
+
+    # Check if already owned
+    if existing.data[0]["owner_id"] is not None:
+        await ctx.send(f"❌ Horse #{horse_id} already has an owner.")
+        return
+
+    try:
+        self.supabase.table("horses").update({
+            "owner_id": str(member.id)
+        }).eq("horse_id", horse_id).execute()
+
+        await ctx.send(f"✅ Horse #{horse_id} successfully assigned to {member.mention}!")
+    except Exception as e:
+        print(f"Failed to assign horse: {e}")
+        await ctx.send("❌ Something went wrong during ownership assignment.")
