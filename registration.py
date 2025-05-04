@@ -7,7 +7,7 @@ class Registration(commands.Cog):
         self.supabase = supabase
 
     @commands.command(name="registerhorse")
-    @commands.has_permissions(administrator=True)
+    @commands.check(lambda ctx: str(ctx.author.id) == "999697174210289784")
     async def register_horse(self, ctx, horse_id: int, sex: str, genotype: str):
         # Validate sex enum
         if sex.upper() not in ("M", "F", "G"):
