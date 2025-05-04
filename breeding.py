@@ -58,7 +58,7 @@ class Breeding(commands.Cog):
             "genotype": foal_genotype,
             "name": "",  # Let the user name it later
             "sex": sex,
-            "registry": "",
+            "registry": "realistic",
             "ref_link": "",
             "xp": 0,
             "rank": "Registered",
