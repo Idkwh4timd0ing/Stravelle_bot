@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from supabase import create_client, Client
 import os
+import uuid
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="/", intents=intents)
@@ -10,6 +11,12 @@ bot = commands.Bot(command_prefix="/", intents=intents)
 url = os.getenv("SUPABASE_URL")
 key = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
+
+supabase.table("users").insert({
+    "user_id": str(uuid.uuid4()),
+    "discord_id": discord_id,
+    "username": username
+}).execute()
 
 @bot.event
 async def on_ready():
