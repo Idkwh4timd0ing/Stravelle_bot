@@ -22,12 +22,12 @@ supabase: Client = create_client(url, key)
 async def on_ready():
     print(f"Bot is online as {bot.user}")
     
-    # Only register the cog once the bot is ready
     try:
-        registration_setup(bot, supabase)
+        await registration_setup(bot, supabase)
         print("✅ Registration cog loaded.")
     except Exception as e:
         print(f"❌ Failed to load registration cog: {e}")
+
 
 @bot.command(name="hello")
 async def hello(ctx):
