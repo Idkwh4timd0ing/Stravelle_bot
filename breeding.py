@@ -2,6 +2,12 @@ import discord
 from discord.ext import commands
 import random
 
+GENE_STRUCTURE = {
+    "E": 2, "A": 2, "ZP": 4, "ZF": 4, "ZD": 4, "CR": 4, "CH": 4,
+    "P": 2, "STY": 6, "RN": 4, "G": 2, "Z": 2,
+    "LP": 4, "TO": 4, "O": 2, "SW": 4, "SB": 4, "RB": 4
+}
+
 class Breeding(commands.Cog):
     def __init__(self, bot, supabase):
         self.bot = bot
@@ -33,34 +39,47 @@ class Breeding(commands.Cog):
         try:
             dam_genes = parse_genotype(dam["genotype"])
             sire_genes = parse_genotype(sire["genotype"])
-        except:
-            await ctx.send("❌ Invalid genotype format. Must be like EE/Aa/ZpZp.")
+        except Exception as e:
+            print(f"Genotype parsing error: {e}")
+            await ctx.send("❌ Invalid genotype format.")
             return
 
         # Create foal genotype
         foal_genes = {}
-        for gene in dam_genes:
-            foal_genes[gene] = random.choice(dam_genes[gene]) + random.choice(sire_genes[gene])
 
-        foal_genotype = f"{foal_genes['E']}/{foal_genes['A']}/{foal_genes['ZP']}"
+        for gene in GENE_STRUCTURE:
+            if gene in dam_genes and gene in sire_genes:
+                allele_1 = random.choice(dam_genes[gene])
+                allele_2 = random.choice(sire_genes[gene])
+                foal_genes[gene] = allele_1 + allele_2
+
+        # Build genotype string in the same order
+        foal_genotype = "/".join([foal_genes[gene] for gene in foal_genes])
+
         await ctx.send(f"🍼 Your new foal has genotype: `{foal_genotype}`")
 
-        # Decrease breeding slots
-        # self.supabase.table("horses").update({
-        #     "slots": dam["slots"] - 1
-        # }).eq("horse_id", dam_id).execute()
+        # Optionally deduct slots
+        # self.supabase.table("horses").update({"slots": dam["slots"] - 1}).eq("horse_id", dam_id).execute()
+        # self.supabase.table("horses").update({"slots": sire["slots"] - 1}).eq("horse_id", sire_id).execute()
 
-        # self.supabase.table("horses").update({
-        #     "slots": sire["slots"] - 1
-        # }).eq("horse_id", sire_id).execute()
 
 def parse_genotype(geno: str):
     parts = geno.split("/")
-    return {
-        "E": [parts[0][0], parts[0][1]],
-        "A": [parts[1][0], parts[1][1]],
-        "ZP": [parts[2][0:2], parts[2][2:4]]  # Assumes ZP is always 2-letter allele
-    }
+    parsed = {}
+    i = 0
+
+    for gene, length in GENE_STRUCTURE.items():
+        if i >= len(parts):
+            break
+
+        segment = parts[i]
+        if len(segment) == length:
+            midpoint = length // 2
+            parsed[gene] = [segment[:midpoint], segment[midpoint:]]
+        i += 1
+
+    return parsed
+
 
 async def setup(bot, supabase):
     await bot.add_cog(Breeding(bot, supabase))
