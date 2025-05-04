@@ -1,21 +1,19 @@
 import discord
 from discord.ext import commands
 
-# Create new import into the database
 class Registration(commands.Cog):
     def __init__(self, bot, supabase):
         self.bot = bot
         self.supabase = supabase
 
+    # Admin-only command to register a new horse
     @commands.command(name="registerhorse")
     @commands.check(lambda ctx: str(ctx.author.id) == "999697174210289784")
     async def register_horse(self, ctx, horse_id: int, sex: str, genotype: str):
-        # Validate sex enum
         if sex.upper() not in ("M", "F", "G"):
             await ctx.send("❌ Invalid sex. Use M (male), F (female), or G (gelded).")
             return
 
-        # Check if horse ID already exists
         existing = self.supabase.table("horses").select("*").eq("horse_id", horse_id).execute()
         if existing.data and len(existing.data) > 0:
             await ctx.send(f"❌ A horse with ID {horse_id} already exists.")
@@ -35,39 +33,33 @@ class Registration(commands.Cog):
                 "xp": 0,
                 "rank": "Registered"
             }).execute()
-
             await ctx.send(f"✅ Horse #{horse_id} successfully registered!")
         except Exception as e:
             print(f"Insert failed: {e}")
             await ctx.send("❌ Something went wrong during horse registration.")
 
+    # Admin-only command to assign a horse to a user
+    @commands.command(name="assignhorse")
+    @commands.check(lambda ctx: str(ctx.author.id) == "999697174210289784")
+    async def assign_horse(self, ctx, horse_id: int, member: discord.Member):
+        existing = self.supabase.table("horses").select("*").eq("horse_id", horse_id).execute()
+        if not existing.data:
+            await ctx.send(f"❌ Horse ID {horse_id} not found.")
+            return
 
-# Assign horse to its new owner
-# !assignhorse id @user
-@commands.command(name="assignhorse")
-@commands.check(lambda ctx: str(ctx.author.id) == "999697174210289784")
-async def assign_horse(self, ctx, horse_id: int, member: discord.Member):
-    # Check if horse exists
-    existing = self.supabase.table("horses").select("*").eq("horse_id", horse_id).execute()
-    if not existing.data:
-        await ctx.send(f"❌ Horse ID {horse_id} not found.")
-        return
+        if existing.data[0]["owner_id"] is not None:
+            await ctx.send(f"❌ Horse #{horse_id} already has an owner.")
+            return
 
-    # Check if already owned
-    if existing.data[0]["owner_id"] is not None:
-        await ctx.send(f"❌ Horse #{horse_id} already has an owner.")
-        return
+        try:
+            self.supabase.table("horses").update({
+                "owner_id": str(member.id)
+            }).eq("horse_id", horse_id).execute()
+            await ctx.send(f"✅ Horse #{horse_id} successfully assigned to {member.mention}!")
+        except Exception as e:
+            print(f"Failed to assign horse: {e}")
+            await ctx.send("❌ Something went wrong during ownership assignment.")
 
-    try:
-        self.supabase.table("horses").update({
-            "owner_id": str(member.id)
-        }).eq("horse_id", horse_id).execute()
-
-        await ctx.send(f"✅ Horse #{horse_id} successfully assigned to {member.mention}!")
-    except Exception as e:
-        print(f"Failed to assign horse: {e}")
-        await ctx.send("❌ Something went wrong during ownership assignment.")
-
-
+# Register the cog with the bot
 async def setup(bot, supabase):
     await bot.add_cog(Registration(bot, supabase))
