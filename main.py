@@ -8,9 +8,14 @@ bot = commands.Bot(command_prefix="/", intents=intents)
 @bot.event
 async def on_ready():
     print(f"Bot is online as {bot.user}")
+    try:
+        synced = await bot.tree.sync()
+        print(f"Synced {len(synced)} slash command(s).")
+    except Exception as e:
+        print(f"Failed to sync commands: {e}")
 
-@bot.command()
-async def hello(ctx):
-    await ctx.send(f"Hello, {ctx.author.mention}!")
+@bot.tree.command(name="hello", description="Say hello to the bot!")
+async def hello(interaction: discord.Interaction):
+    await interaction.response.send_message(f"Hello, {interaction.user.mention}!")
 
 bot.run(os.getenv("DISCORD_TOKEN"))
