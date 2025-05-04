@@ -29,7 +29,7 @@ async def hello(ctx):
 # Reaction for member role and registration
 @bot.event
 async def on_raw_reaction_add(payload):
-    rules_message_id = 1368584375264084000  # your message ID
+    rules_message_id = 1368587804036038666  # your message ID
     check_emoji = "✅"
 
     if payload.message_id != rules_message_id:
