@@ -25,7 +25,29 @@ class Breeding(commands.Cog):
         foal_genotype = generate_foal_genotype(dam["genotype"], sire["genotype"])
 
         # Create a unique foal ID
-        foal_id = str(uuid.uuid4())
+        response = supabase.table("horses").select("horse_id").order("horse_id", desc=True).limit(1).execute()
+        
+        if response.data:
+            last_id = response.data[0]["horse_id"]
+            foal_id = last_id + 1
+        else:
+            foal_id = 1
+
+        sex = random.choice(["M", "F"])
+
+        mutation = ""
+        if random.random() < 0.07:
+            mutation_roll = random.random()
+            if mutation_roll < 0.10:
+                mutation = "Albinism"
+            elif mutation_roll < 0.20:
+                mutation = "Melanism"
+            elif mutation_roll < 0.40:
+                mutation = "Somatic Patches"
+            elif mutation_roll < 0.70:
+                mutation = "Bend’Or Spots"
+            else:
+                mutation = "Birdcatcher Spots"
 
         # Insert the foal into the database
         foal_data = {
@@ -35,11 +57,12 @@ class Breeding(commands.Cog):
             "sire_id": sire_id,
             "genotype": foal_genotype,
             "name": "",  # Let the user name it later
-            "sex": "",    # Could be randomly assigned or chosen later
+            "sex": sex,
             "registry": "",
             "ref_link": "",
             "xp": 0,
-            "rank": ""
+            "rank": "Registered",
+            "mutation": mutation
         }
 
         try:
