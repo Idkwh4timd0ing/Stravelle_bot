@@ -41,9 +41,6 @@ class Registration(commands.Cog):
             print(f"Insert failed: {e}")
             await ctx.send("❌ Something went wrong during horse registration.")
 
-async def setup(bot, supabase):
-    await bot.add_cog(Registration(bot, supabase))
-
 
 # Assign horse to its new owner
 # !assignhorse id @user
@@ -70,3 +67,7 @@ async def assign_horse(self, ctx, horse_id: int, member: discord.Member):
     except Exception as e:
         print(f"Failed to assign horse: {e}")
         await ctx.send("❌ Something went wrong during ownership assignment.")
+
+
+async def setup(bot, supabase):
+    await bot.add_cog(Registration(bot, supabase))
