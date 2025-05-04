@@ -40,7 +40,7 @@ class HorseManagement(commands.Cog):
         await ctx.send(embed=embed)
 
 # Modify name
-        @commands.command(name="editname")
+    @commands.command(name="editname")
         async def edit_name(self, ctx, horse_id: int, *, new_name: str):
             horse = self.supabase.table("horses").select("*").eq("horse_id", horse_id).execute()
         
@@ -66,7 +66,7 @@ class HorseManagement(commands.Cog):
 
 
 #Modify ref link
-        @commands.command(name="editref")
+    @commands.command(name="editref")
         async def edit_ref(self, ctx, horse_id: int, new_ref: str):
             if not new_ref.startswith("http"):
                 await ctx.send("❌ Please provide a valid reference link.")
