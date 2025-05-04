@@ -8,6 +8,15 @@ GENE_STRUCTURE = {
     "LP": 4, "TO": 4, "O": 2, "SW": 4, "SB": 4, "RB": 4
 }
 
+GENE_ORDER = [
+    "E", "A", "ZP", "ZF", "ZD", "CR", "CH", "P", "STY", "RN",
+    "G", "Z", "LP", "TO", "O", "SW", "SB", "RB"
+]
+
+def format_genotype(genes: dict) -> str:
+    return "/".join([genes[gene] for gene in GENE_ORDER if gene in genes])
+
+
 class Breeding(commands.Cog):
     def __init__(self, bot, supabase):
         self.bot = bot
@@ -54,7 +63,7 @@ class Breeding(commands.Cog):
                 foal_genes[gene] = allele_1 + allele_2
 
         # Build genotype string in the same order
-        foal_genotype = "/".join([foal_genes[gene] for gene in foal_genes])
+        foal_genotype = format_genotype(foal_genes)
 
         await ctx.send(f"🍼 Your new foal has genotype: `{foal_genotype}`")
 
@@ -64,21 +73,19 @@ class Breeding(commands.Cog):
 
 
 def parse_genotype(geno: str):
-    parts = geno.split("/")
     parsed = {}
-    i = 0
+    parts = geno.split("/")
 
-    for gene, length in GENE_STRUCTURE.items():
-        if i >= len(parts):
-            break
-
-        segment = parts[i]
-        if len(segment) == length:
-            midpoint = length // 2
-            parsed[gene] = [segment[:midpoint], segment[midpoint:]]
-        i += 1
+    for part in parts:
+        if "=" in part:
+            gene, alleles = part.split("=")
+            expected_len = GENE_STRUCTURE.get(gene)
+            if expected_len and len(alleles) == expected_len:
+                midpoint = expected_len // 2
+                parsed[gene] = [alleles[:midpoint], alleles[midpoint:]]
 
     return parsed
+
 
 
 async def setup(bot, supabase):
