@@ -1,3 +1,5 @@
+import random
+
 def generate_foal_genotype(mare_genotype, stallion_genotype):
     mare_genes = mare_genotype.split('/')
     stallion_genes = stallion_genotype.split('/')
