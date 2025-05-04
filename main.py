@@ -35,6 +35,7 @@ async def hello(ctx):
     await ctx.send(f"Hello, {ctx.author.mention}!")
 
 
+
 # Reaction for member role and registration
 @bot.event
 async def on_raw_reaction_add(payload):
@@ -48,13 +49,13 @@ async def on_raw_reaction_add(payload):
         return
 
     guild = bot.get_guild(payload.guild_id)
-    member = guild.get_member(payload.user_id)
+    Member = guild.get_member(payload.user_id)
 
-    if member is None or member.bot:
+    if Member is None or Member.bot:
         return
 
-    discord_id = str(member.id)
-    username = member.name
+    discord_id = str(Member.id)
+    username = Member.name
     user_id = str(uuid.uuid4())
 
     existing = supabase.table("users").select("*").eq("discord_id", discord_id).execute()
@@ -75,12 +76,13 @@ async def on_raw_reaction_add(payload):
 
         # Optionally send them a welcome message
         try:
-            await member.send("Welcome to Stravelle! You've been successfully registered.")
+            await Member.send("Welcome to Stravelle! You've been successfully registered.")
         except discord.Forbidden:
             print(f"Couldn't DM {username}, DMs may be closed.")
 
     except Exception as e:
         print(f"Failed to auto-register {username}: {e}")
+
 
 
 # Command to send the agreeing rule message
@@ -96,7 +98,7 @@ async def sendrules(ctx):
     button = Button(label="I agree ✅", style=discord.ButtonStyle.success)
 
     async def button_callback(interaction):
-        role = discord.utils.get(interaction.guild.roles, name="member")
+        role = discord.utils.get(interaction.guild.roles, name="Member")
         if role:
             await interaction.user.add_roles(role)
             await interaction.response.send_message("Welcome to Stravelle! You now have full access.", ephemeral=True)
