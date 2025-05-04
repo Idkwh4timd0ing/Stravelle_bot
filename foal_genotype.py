@@ -715,8 +715,8 @@ def generate_foal_genotype(mare_genotype, stallion_genotype):
     # ========================
     # Geno generation
     # ========================
-        # Combine the selected genes to create the foal's genotype
-        foal_genotype = f"{foal_extension_gene}/{foal_agouti_gene}"
+    # Combine the selected genes to create the foal's genotype
+    foal_genotype = f"{foal_extension_gene}/{foal_agouti_gene}"
     if foal_zp_gene:
         foal_genotype += f"/{foal_zp_gene}"
     if foal_zf_gene:
