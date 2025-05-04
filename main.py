@@ -49,13 +49,13 @@ async def on_raw_reaction_add(payload):
         return
 
     guild = bot.get_guild(payload.guild_id)
-    Member = guild.get_member(payload.user_id)
+    member = guild.get_member(payload.user_id)
 
-    if Member is None or Member.bot:
+    if member is None or member.bot:
         return
 
-    discord_id = str(Member.id)
-    username = Member.name
+    discord_id = str(member.id)
+    username = member.name
     user_id = str(uuid.uuid4())
 
     existing = supabase.table("users").select("*").eq("discord_id", discord_id).execute()
@@ -76,7 +76,7 @@ async def on_raw_reaction_add(payload):
 
         # Optionally send them a welcome message
         try:
-            await Member.send("Welcome to Stravelle! You've been successfully registered.")
+            await member.send("Welcome to Stravelle! You've been successfully registered.")
         except discord.Forbidden:
             print(f"Couldn't DM {username}, DMs may be closed.")
 
