@@ -6,8 +6,6 @@ import uuid
 from discord.ui import Button, View
 from registration import setup as registration_setup
 
-
-
 # Set up Discord bot with prefix '!'
 intents = discord.Intents.default()
 intents.message_content = True
@@ -19,17 +17,24 @@ url = os.getenv("SUPABASE_URL")
 key = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
-registration_setup(bot, supabase)
 
 @bot.event
 async def on_ready():
     print(f"Bot is online as {bot.user}")
+    
+    # Only register the cog once the bot is ready
+    try:
+        registration_setup(bot, supabase)
+        print("✅ Registration cog loaded.")
+    except Exception as e:
+        print(f"❌ Failed to load registration cog: {e}")
 
 @bot.command(name="hello")
 async def hello(ctx):
     print(f"!hello used by {ctx.author}")
     await ctx.send(f"Hello, {ctx.author.mention}!")
-    
+
+
 # Reaction for member role and registration
 @bot.event
 async def on_raw_reaction_add(payload):
