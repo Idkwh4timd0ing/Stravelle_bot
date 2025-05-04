@@ -35,5 +35,6 @@ class HorseManagement(commands.Cog):
 
         await ctx.send(embed=embed)
 
-def setup(bot, supabase):
-    bot.add_cog(HorseManagement(bot, supabase))
+async def setup(bot, supabase):
+    await bot.add_cog(HorseManagement(bot, supabase))
+
