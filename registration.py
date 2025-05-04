@@ -60,6 +60,48 @@ class Registration(commands.Cog):
             print(f"Failed to assign horse: {e}")
             await ctx.send("❌ Something went wrong during ownership assignment.")
 
+    
+    @commands.command(name="claimhorse")
+    async def claim_horse(self, ctx, horse_id: int, name: str, registry: str, ref_link: str):
+        # Check registry validity
+        if registry.lower() not in ("realistic", "fantasy"):
+            await ctx.send("❌ Invalid registry. Choose either 'realistic' or 'fantasy'.")
+            return
+    
+        if not ref_link.startswith("http"):
+            await ctx.send("❌ Invalid reference link.")
+            return
+    
+        horse = self.supabase.table("horses").select("*").eq("horse_id", horse_id).execute()
+    
+        if not horse.data:
+            await ctx.send(f"❌ Horse ID {horse_id} not found.")
+            return
+    
+        horse = horse.data[0]
+    
+        # Check ownership
+        if str(ctx.author.id) != horse["owner_id"]:
+            await ctx.send("❌ You do not own this horse.")
+            return
+    
+        if horse["name"] is not None:
+            await ctx.send("❌ This horse has already been claimed.")
+            return
+    
+        try:
+            self.supabase.table("horses").update({
+                "name": name,
+                "registry": registry.lower(),
+                "ref_link": ref_link
+            }).eq("horse_id", horse_id).execute()
+    
+            await ctx.send(f"✅ Horse #{horse_id} is now named **{name}** and placed in the **{registry}** registry!")
+        except Exception as e:
+            print(f"Failed to claim horse: {e}")
+            await ctx.send("❌ Something went wrong during claim.")
+
+
 # Register the cog with the bot
 async def setup(bot, supabase):
     await bot.add_cog(Registration(bot, supabase))
