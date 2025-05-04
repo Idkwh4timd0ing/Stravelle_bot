@@ -4,6 +4,10 @@ from supabase import create_client, Client
 import os
 import uuid
 from discord.ui import Button, View
+from registration import setup as registration_setup
+
+
+registration_setup(bot, supabase)
 
 # Set up Discord bot with prefix '!'
 intents = discord.Intents.default()
