@@ -40,5 +40,5 @@ class Registration(commands.Cog):
             print(f"Insert failed: {e}")
             await ctx.send("❌ Something went wrong during horse registration.")
 
-def setup(bot, supabase):
-    bot.add_cog(Registration(bot, supabase))
+async def setup(bot, supabase):
+    await bot.add_cog(Registration(bot, supabase))
