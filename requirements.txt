@@ -1,2 +1,2 @@
 discord.py
-supabase-py
+supabase
