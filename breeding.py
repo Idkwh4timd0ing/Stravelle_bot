@@ -26,9 +26,13 @@ class Breeding(commands.Cog):
             await ctx.send("❌ Invalid pairing: the dam must be female and the sire must be male.")
             return
 
-        # Check if both parents are in the realistic registry
         if dam["registry"] != "realistic" or sire["registry"] != "realistic":
             await ctx.send("❌ Both horses must be in the realistic registry to breed.")
+            return
+
+        if dam_id == sire["dam_id"] or dam_id == sire["sire_id"] or \
+           sire_id == dam["dam_id"] or sire_id == dam["sire_id"]:
+            await ctx.send("❌ Horses cannot breed with their own parents.")
             return
 
         # Cooldown check for user
@@ -39,7 +43,6 @@ class Breeding(commands.Cog):
 
         user = user_result.data[0]
         last_breed_str = user.get("last_breed")
-
         if last_breed_str:
             last_breed = datetime.strptime(last_breed_str, "%Y-%m-%dT%H:%M:%S")
             if datetime.utcnow() - last_breed < timedelta(days=30):
@@ -49,10 +52,7 @@ class Breeding(commands.Cog):
         def create_foal():
             nonlocal dam, sire
 
-            # Generate the foal's genotype
             foal_genotype = generate_foal_genotype(dam["genotype"], sire["genotype"])
-
-            # Create a unique foal ID
             response = self.supabase.table("horses").select("horse_id").order("horse_id", desc=True).limit(1).execute()
             foal_id = response.data[0]["horse_id"] + 1 if response.data else 1
 
@@ -72,7 +72,6 @@ class Breeding(commands.Cog):
                 else:
                     mutation = "Birdcatcher Spots"
 
-            # Insert the foal into the database
             foal_data = {
                 "horse_id": foal_id,
                 "owner_id": dam["owner_id"],
@@ -91,10 +90,9 @@ class Breeding(commands.Cog):
             self.supabase.table("horses").insert(foal_data).execute()
             return foal_id, sex, foal_genotype, mutation
 
-        # Generate foal and check for twins
-        foal_id, sex, foal_genotype = create_foal()
+        foal_id, sex, foal_genotype, mutation = create_foal()
 
-        if random.random() < 0.50:  # 5% chance for twins
+        if random.random() < 0.50:
             foal_id2, sex2, foal_genotype2, mutation2 = create_foal()
             await ctx.send(
                 f"🎉 Twins born!\n"
@@ -109,7 +107,6 @@ class Breeding(commands.Cog):
                 + (f" | Mutation: `{mutation}`" if mutation else "")
             )
 
-        # Update user cooldown
         self.supabase.table("users").update({"last_breed": datetime.utcnow().isoformat()}).eq("discord_id", str(ctx.author.id)).execute()
 
 
