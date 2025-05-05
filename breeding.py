@@ -35,6 +35,11 @@ class Breeding(commands.Cog):
             await ctx.send("❌ Horses cannot breed with their own parents.")
             return
 
+        # Check available slots
+        if dam.get("slots", 0) <= 0 or sire.get("slots", 0) <= 0:
+            await ctx.send("❌ One or both horses do not have any breeding slots left.")
+            return
+
         # Cooldown check for user
         user_result = self.supabase.table("users").select("*").eq("discord_id", str(ctx.author.id)).execute()
         if not user_result.data:
@@ -50,7 +55,6 @@ class Breeding(commands.Cog):
                     await ctx.send("⏳ You can only breed once every 30 days.")
                     return
 
-        
         def create_foal():
             nonlocal dam, sire
 
@@ -61,7 +65,7 @@ class Breeding(commands.Cog):
             sex = random.choice(["M", "F"])
 
             mutation = ""
-            if random.random() < 0.50:
+            if random.random() < 0.07:
                 mutation_roll = random.random()
                 if mutation_roll < 0.10:
                     mutation = "Albinism"
@@ -94,7 +98,7 @@ class Breeding(commands.Cog):
 
         foal_id, sex, foal_genotype, mutation = create_foal()
 
-        if random.random() < 0.50:
+        if random.random() < 0.05:
             foal_id2, sex2, foal_genotype2, mutation2 = create_foal()
             await ctx.send(
                 f"🎉 Twins born!\n"
@@ -109,7 +113,13 @@ class Breeding(commands.Cog):
                 + (f" | Mutation: `{mutation}`" if mutation else "")
             )
 
-        self.supabase.table("users").update({"last_breed": datetime.utcnow().isoformat()}).eq("discord_id", str(ctx.author.id)).execute()
+        # Update cooldown for non-admins
+        if not ctx.author.guild_permissions.administrator:
+            self.supabase.table("users").update({"last_breed": datetime.utcnow().isoformat()}).eq("discord_id", str(ctx.author.id)).execute()
+
+        # Subtract slots from both parents
+        self.supabase.table("horses").update({"slots": dam["slots"] - 1}).eq("horse_id", dam_id).execute()
+        self.supabase.table("horses").update({"slots": sire["slots"] - 1}).eq("horse_id", sire_id).execute()
 
 
 async def setup(bot, supabase):
