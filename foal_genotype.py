@@ -37,41 +37,40 @@ def generate_foal_genotype(mare_genotype, stallion_genotype):
         2 if len(stallion_genes) > 2 and 'Zd' in stallion_genes[2] else None)
     
     
-    p_position_m = 7 if zp_position_m == 2 and zf_position_m == 3 and zd_position_m == 4 and len(mare_genes) > 7 and 'P' in mare_genes[7] else (
-        6 if len(mare_genes) > 6 and 'P' in mare_genes[6] else
-        5 if len(mare_genes) > 5 and 'P' in mare_genes[5] else
-        4 if len(mare_genes) > 4 and 'P' in mare_genes[4] else
-        3 if len(mare_genes) > 3 and 'P' in mare_genes[3] else
-        2 if len(mare_genes) > 2 and 'P' in mare_genes[2] else None)
-    p_position_s = 7 if zp_position_s == 2 and zf_position_s == 3 and zd_position_s == 4 and len(stallion_genes) > 7 and 'P' in stallion_genes[7] else (
-        6 if len(stallion_genes) > 6 and 'P' in stallion_genes[6] else
-        5 if len(stallion_genes) > 5 and 'P' in stallion_genes[5] else
-        4 if len(stallion_genes) > 4 and 'P' in stallion_genes[4] else
-        3 if len(stallion_genes) > 3 and 'P' in stallion_genes[3] else
-        2 if len(stallion_genes) > 2 and 'P' in stallion_genes[2] else None)
-    
-    
-    cr_position_m = 5 if zp_position_m == 2 and zf_position_m == 3 and zd_position_m == 4 and p_position_m == 7 and len(mare_genes) > 5 and 'Cr' in mare_genes[5] else (
+    cr_position_m = 5 if zp_position_m == 2 and zf_position_m == 3 and zd_position_m == 4 and len(mare_genes) > 5 and 'Cr' in mare_genes[5] else (
         4 if len(mare_genes) > 4 and 'Cr' in mare_genes[4] else
         3 if len(mare_genes) > 3 and 'Cr' in mare_genes[3] else
         2 if len(mare_genes) > 2 and 'Cr' in mare_genes[2] else None)
-    cr_position_s = 5 if zp_position_s == 2 and zf_position_s == 3 and zd_position_s == 4 and p_position_s == 7 and len(stallion_genes) > 5 and 'Cr' in stallion_genes[5] else (
+    cr_position_s = 5 if zp_position_s == 2 and zf_position_s == 3 and zd_position_s == 4 and len(stallion_genes) > 5 and 'Cr' in stallion_genes[5] else (
         4 if len(stallion_genes) > 4 and 'Cr' in stallion_genes[4] else
         3 if len(stallion_genes) > 3 and 'Cr' in stallion_genes[3] else
         2 if len(stallion_genes) > 2 and 'Cr' in stallion_genes[2] else None)
     
     
-    ch_position_m = 6 if zp_position_m == 2 and zf_position_m == 3 and zd_position_m == 4 and p_position_m == 7 and cr_position_m == 5 and len(mare_genes) > 6 and 'Ch' in mare_genes[6] else (
+    ch_position_m = 6 if zp_position_m == 2 and zf_position_m == 3 and zd_position_m == 4 and cr_position_m == 5 and len(mare_genes) > 6 and 'Ch' in mare_genes[6] else (
         5 if len(mare_genes) > 5 and 'Ch' in mare_genes[5] else
         4 if len(mare_genes) > 4 and 'Ch' in mare_genes[4] else
         3 if len(mare_genes) > 3 and 'Ch' in mare_genes[3] else
         2 if len(mare_genes) > 2 and 'Ch' in mare_genes[2] else None)
-    ch_position_s = 6 if zp_position_s == 2 and zf_position_s == 3 and zd_position_s == 4 and p_position_s == 7 and cr_position_s == 5 and len(stallion_genes) > 6 and 'Ch' in stallion_genes[6] else (
+    ch_position_s = 6 if zp_position_s == 2 and zf_position_s == 3 and zd_position_s == 4 and cr_position_s == 5 and len(stallion_genes) > 6 and 'Ch' in stallion_genes[6] else (
         5 if len(stallion_genes) > 5 and 'Ch' in stallion_genes[5] else
         4 if len(stallion_genes) > 4 and 'Ch' in stallion_genes[4] else
         3 if len(stallion_genes) > 3 and 'Ch' in stallion_genes[3] else
         2 if len(stallion_genes) > 2 and 'Ch' in stallion_genes[2] else None)
     
+
+    p_position_m = 7 if zp_position_m == 2 and zf_position_m == 3 and zd_position_m == 4 and cr_position_m == 5 and ch_position_m == 6 and len(mare_genes) > 7 and 'P' in mare_genes[7] else (
+        6 if len(mare_genes) > 6 and 'P' in mare_genes[6] else
+        5 if len(mare_genes) > 5 and 'P' in mare_genes[5] else
+        4 if len(mare_genes) > 4 and 'P' in mare_genes[4] else
+        3 if len(mare_genes) > 3 and 'P' in mare_genes[3] else
+        2 if len(mare_genes) > 2 and 'P' in mare_genes[2] else None)
+    p_position_s = 7 if zp_position_s == 2 and zf_position_s == 3 and zd_position_s == 4 and cr_position_s == 5 and ch_position_s == 6 and len(stallion_genes) > 7 and 'P' in stallion_genes[7] else (
+        6 if len(stallion_genes) > 6 and 'P' in stallion_genes[6] else
+        5 if len(stallion_genes) > 5 and 'P' in stallion_genes[5] else
+        4 if len(stallion_genes) > 4 and 'P' in stallion_genes[4] else
+        3 if len(stallion_genes) > 3 and 'P' in stallion_genes[3] else
+        2 if len(stallion_genes) > 2 and 'P' in stallion_genes[2] else None)
     
     
     sty_position_m = 8 if zp_position_m == 2 and zf_position_m == 3 and zd_position_m == 4 and cr_position_m == 5 and ch_position_m == 6 and p_position_m == 7 and len(mare_genes) > 8 and 'STY' in mare_genes[8] else (
