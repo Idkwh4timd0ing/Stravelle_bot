@@ -43,12 +43,14 @@ class Breeding(commands.Cog):
 
         user = user_result.data[0]
         last_breed_str = user.get("last_breed")
-        if last_breed_str:
-            last_breed = datetime.strptime(last_breed_str, "%Y-%m-%dT%H:%M:%S")
-            if datetime.utcnow() - last_breed < timedelta(days=30):
-                await ctx.send("⏳ You can only breed once every 30 days.")
-                return
+        if not ctx.author.guild_permissions.administrator:
+            if last_breed_str:
+                last_breed = datetime.fromisoformat(last_breed_str)
+                if datetime.utcnow() - last_breed < timedelta(days=30):
+                    await ctx.send("⏳ You can only breed once every 30 days.")
+                    return
 
+        
         def create_foal():
             nonlocal dam, sire
 
