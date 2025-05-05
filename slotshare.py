@@ -16,15 +16,21 @@ class SlotSharing(commands.Cog):
 
         horse = horse_result.data[0]
 
-        # Check if the author owns the horse
+        # Get user ID of the command sender
         user_result = self.supabase.table("users").select("user_id").eq("discord_id", str(ctx.author.id)).execute()
         if not user_result.data:
             await ctx.send("❌ You are not registered.")
             return
 
         user_id = user_result.data[0]["user_id"]
-        if horse["owner_id"] != user_id:
-            await ctx.send("❌ You do not own this horse.")
+
+        # Check if the author is allowed to manage the horse (owner or shared slot)
+        is_owner = horse["owner_id"] == user_id
+        shared_slot_result = self.supabase.table("shared_slots").select("*").eq("horse_id", horse_id).eq("shared_with", user_id).execute()
+        has_access = bool(shared_slot_result.data)
+
+        if not is_owner and not has_access:
+            await ctx.send("❌ You do not own this horse or have access to manage its slots.")
             return
 
         if horse.get("slots", 0) <= 0:
