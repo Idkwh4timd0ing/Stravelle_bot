@@ -7,7 +7,7 @@ from discord.ui import Button, View
 from registration import setup as registration_setup
 from horse_manage import setup as manage_setup
 from breeding import setup as breeding_setup
-
+from slotshare import setup as slotshare_setup
 
 
 # Set up Discord bot with prefix '!'
@@ -30,7 +30,8 @@ async def on_ready():
         await registration_setup(bot, supabase)
         await manage_setup(bot, supabase)
         await breeding_setup(bot, supabase)
-        print("✅ Registration cog loaded.")
+        await slotshare_setup(bot, supabase)
+        print("✅ All cogs loaded.")
     except Exception as e:
         print(f"❌ Failed to load registration cog: {e}")
 
