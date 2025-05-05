@@ -82,7 +82,7 @@ class Breeding(commands.Cog):
                 "genotype": foal_genotype,
                 "name": "",
                 "sex": sex,
-                "registry": "realistic",
+                "registry": None,
                 "ref_link": "",
                 "xp": 0,
                 "rank": "Registered",
