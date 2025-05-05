@@ -27,6 +27,10 @@ class SlotShare(commands.Cog):
             await ctx.send("❌ You do not own this horse.")
             return
 
+        print("DEBUG: Horse owner_id =", horse["owner_id"])
+        print("DEBUG: Your user_id =", user_id)
+
+        
         # Count how many slots already shared
         shared_result = self.supabase.table("shared_slots").select("*").eq("horse_id", horse_id).execute()
         shared_count = len(shared_result.data)
