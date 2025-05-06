@@ -6,7 +6,7 @@ class SlotShare(commands.Cog):
         self.bot = bot
         self.supabase = supabase
 
-    @commands.command(name="grantbreed")
+    @commands.command(name="sell_slot")
     async def grant_breeding_slot(self, ctx, horse_id: int, user: discord.User, slots: int):
         # Vérifie si le cheval appartient à l'utilisateur
         horse_result = self.supabase.table("horses").select("owner_id").eq("horse_id", horse_id).execute()
