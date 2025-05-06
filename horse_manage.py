@@ -1,5 +1,46 @@
 import discord
 from discord.ext import commands
+from discord.ui import View, Button
+
+class HorsePaginator(View):
+    def __init__(self, horses, user_id):
+        super().__init__(timeout=60)
+        self.horses = horses
+        self.page = 0
+        self.per_page = 10
+        self.user_id = user_id
+
+    def format_embed(self):
+        start = self.page * self.per_page
+        end = start + self.per_page
+        horses_page = self.horses[start:end]
+
+        embed = discord.Embed(
+            title=f"🐎 Your Horses (Page {self.page + 1}/{(len(self.horses) - 1) // self.per_page + 1})",
+            color=0x1abc9c
+        )
+
+        for horse in horses_page:
+            line = f"ID: `{horse['horse_id']}` | Sex: `{horse['sex']}` | Genotype: `{horse['genotype']}`"
+            embed.add_field(name=horse["name"] or "Unnamed", value=line, inline=False)
+
+        return embed
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return str(interaction.user.id) == self.user_id
+
+    @discord.ui.button(label="⏮️", style=discord.ButtonStyle.primary)
+    async def prev_page(self, interaction: discord.Interaction, button: Button):
+        if self.page > 0:
+            self.page -= 1
+            await interaction.response.edit_message(embed=self.format_embed(), view=self)
+
+    @discord.ui.button(label="⏭️", style=discord.ButtonStyle.primary)
+    async def next_page(self, interaction: discord.Interaction, button: Button):
+        if (self.page + 1) * self.per_page < len(self.horses):
+            self.page += 1
+            await interaction.response.edit_message(embed=self.format_embed(), view=self)
+
 
 class HorseManagement(commands.Cog):
     def __init__(self, bot, supabase):
@@ -88,6 +129,18 @@ class HorseManagement(commands.Cog):
             print(f"Failed to update ref link: {e}")
             await ctx.send("❌ Something went wrong while updating the ref link.")
 
-# Don't forget the setup function
+    @commands.command(name="myhorses")
+    async def my_horses(self, ctx):
+        horses = self.supabase.table("horses").select("*").eq("owner_id", str(ctx.author.id)).order("horse_id", desc=True).execute()
+
+        if not horses.data:
+            await ctx.send("❌ You don't own any horses.")
+            return
+
+        view = HorsePaginator(horses.data, str(ctx.author.id))
+        embed = view.format_embed()
+        await ctx.send(embed=embed, view=view)
+
+
 async def setup(bot, supabase):
     await bot.add_cog(HorseManagement(bot, supabase))
