@@ -35,18 +35,35 @@ class Breeding(commands.Cog):
             await ctx.send("❌ Horses cannot breed with their own parents.")
             return
 
-        # Check available slots
-        if dam.get("slots", 0) <= 0 or sire.get("slots", 0) <= 0:
-            await ctx.send("❌ One or both horses do not have any breeding slots left.")
-            return
-
-        # Cooldown check for user
+        # Fetch user info
         user_result = self.supabase.table("users").select("*").eq("discord_id", str(ctx.author.id)).execute()
         if not user_result.data:
             await ctx.send("❌ You are not registered as a user.")
             return
 
         user = user_result.data[0]
+        user_id = str(ctx.author.id)
+
+        # Check if user is allowed to use sire
+        if user_id != sire["owner_id"]:
+            perm = self.supabase.table("breeding_permissions").select("*").eq("horse_id", sire_id).eq("allowed_user_id", user_id).execute()
+            if not perm.data or perm.data[0]["slots_granted"] <= perm.data[0]["slots_used"]:
+                await ctx.send("❌ You are not allowed to use this sire.")
+                return
+
+        # Check if user is allowed to use dam
+        if user_id != dam["owner_id"]:
+            perm = self.supabase.table("breeding_permissions").select("*").eq("horse_id", dam_id).eq("allowed_user_id", user_id).execute()
+            if not perm.data or perm.data[0]["slots_granted"] <= perm.data[0]["slots_used"]:
+                await ctx.send("❌ You are not allowed to use this dam.")
+                return
+
+        # Check available slots
+        if dam.get("slots", 0) <= 0 or sire.get("slots", 0) <= 0:
+            await ctx.send("❌ One or both horses do not have any breeding slots left.")
+            return
+
+        # Cooldown check for non-admin users
         last_breed_str = user.get("last_breed")
         if not ctx.author.guild_permissions.administrator:
             if last_breed_str:
@@ -80,7 +97,7 @@ class Breeding(commands.Cog):
 
             foal_data = {
                 "horse_id": foal_id,
-                "owner_id": dam["owner_id"],
+                "owner_id": user_id,
                 "dam_id": dam_id,
                 "sire_id": sire_id,
                 "genotype": foal_genotype,
@@ -120,6 +137,12 @@ class Breeding(commands.Cog):
         # Subtract slots from both parents
         self.supabase.table("horses").update({"slots": dam["slots"] - 1}).eq("horse_id", dam_id).execute()
         self.supabase.table("horses").update({"slots": sire["slots"] - 1}).eq("horse_id", sire_id).execute()
+
+        # Update permissions if user is not the owner
+        if user_id != dam["owner_id"]:
+            self.supabase.table("breeding_permissions").update({"slots_used": perm.data[0]["slots_used"] + 1}).eq("id", perm.data[0]["id"]).execute()
+        if user_id != sire["owner_id"]:
+            self.supabase.table("breeding_permissions").update({"slots_used": perm.data[0]["slots_used"] + 1}).eq("id", perm.data[0]["id"]).execute()
 
 
 async def setup(bot, supabase):
