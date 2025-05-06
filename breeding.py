@@ -45,18 +45,23 @@ class Breeding(commands.Cog):
         user_id = str(ctx.author.id)
 
         # Check if user is allowed to use sire
+        sire_perm = None
         if user_id != sire["owner_id"]:
-            perm = self.supabase.table("breeding_permissions").select("*").eq("horse_id", sire_id).eq("allowed_user_id", user_id).execute()
-            if not perm.data or perm.data[0]["slots_granted"] <= perm.data[0]["slots_used"]:
+            sire_perm_result = self.supabase.table("breeding_permissions").select("*").eq("horse_id", sire_id).eq("allowed_user_id", user_id).execute()
+            if not sire_perm_result.data or sire_perm_result.data[0]["slots_granted"] <= sire_perm_result.data[0]["slots_used"]:
                 await ctx.send("❌ You are not allowed to use this sire.")
                 return
-
+            sire_perm = sire_perm_result.data[0]
+        
         # Check if user is allowed to use dam
+        dam_perm = None
         if user_id != dam["owner_id"]:
-            perm = self.supabase.table("breeding_permissions").select("*").eq("horse_id", dam_id).eq("allowed_user_id", user_id).execute()
-            if not perm.data or perm.data[0]["slots_granted"] <= perm.data[0]["slots_used"]:
+            dam_perm_result = self.supabase.table("breeding_permissions").select("*").eq("horse_id", dam_id).eq("allowed_user_id", user_id).execute()
+            if not dam_perm_result.data or dam_perm_result.data[0]["slots_granted"] <= dam_perm_result.data[0]["slots_used"]:
                 await ctx.send("❌ You are not allowed to use this dam.")
                 return
+            dam_perm = dam_perm_result.data[0]
+
 
         # Check available slots
         if dam.get("slots", 0) <= 0 or sire.get("slots", 0) <= 0:
@@ -139,10 +144,10 @@ class Breeding(commands.Cog):
         self.supabase.table("horses").update({"slots": sire["slots"] - 1}).eq("horse_id", sire_id).execute()
 
         # Update permissions if user is not the owner
-        if user_id != dam["owner_id"]:
-            self.supabase.table("breeding_permissions").update({"slots_used": perm.data[0]["slots_used"] + 1}).eq("id", perm.data[0]["id"]).execute()
-        if user_id != sire["owner_id"]:
-            self.supabase.table("breeding_permissions").update({"slots_used": perm.data[0]["slots_used"] + 1}).eq("id", perm.data[0]["id"]).execute()
+        if dam_perm:
+            self.supabase.table("breeding_permissions").update({"slots_used": dam_perm["slots_used"] + 1}).eq("id", dam_perm["id"]).execute()
+        if sire_perm:
+            self.supabase.table("breeding_permissions").update({"slots_used": sire_perm["slots_used"] + 1}).eq("id", sire_perm["id"]).execute()
 
 
 async def setup(bot, supabase):
