@@ -101,6 +101,33 @@ class Registration(commands.Cog):
             print(f"Failed to claim horse: {e}")
             await ctx.send("❌ Something went wrong during claim.")
 
+    
+    @commands.command(name="transferhorse")
+    async def transfer_horse(self, ctx, horse_id: int, new_owner: discord.Member):
+        # Récupère le cheval
+        result = self.supabase.table("horses").select("owner_id").eq("horse_id", horse_id).execute()
+
+        if not result.data:
+            await ctx.send("❌ Horse not found.")
+            return
+
+        horse = result.data[0]
+        if horse["owner_id"] != str(ctx.author.id):
+            await ctx.send("❌ You do not own this horse.")
+            return
+
+        if str(new_owner.id) == horse["owner_id"]:
+            await ctx.send("❌ This user already owns the horse.")
+            return
+
+        try:
+            self.supabase.table("horses").update({"owner_id": str(new_owner.id)}).eq("horse_id", horse_id).execute()
+            await ctx.send(f"🔁 Horse `{horse_id}` successfully transferred to {new_owner.mention}!")
+        except Exception as e:
+            print("Error during transfer:", e)
+            await ctx.send("❌ Something went wrong during the transfer.")
+
+
 
 # Register the cog with the bot
 async def setup(bot, supabase):
