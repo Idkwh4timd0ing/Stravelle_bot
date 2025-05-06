@@ -7,7 +7,7 @@ from discord.ui import Button, View
 from registration import setup as registration_setup
 from horse_manage import setup as manage_setup
 from breeding import setup as breeding_setup
-from slotshare import setup as slotshare_setup
+from slotshare import setup as slotshare_setup 
 
 # Set up Discord bot with prefix '!'
 intents = discord.Intents.default()
