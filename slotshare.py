@@ -38,6 +38,28 @@ class SlotShare(commands.Cog):
 
         await ctx.send(f"✅ Granted {slots} breeding slot(s) for horse `{horse_id}` to {user.mention}.")
 
+    @commands.command(name="revoke_slot")
+    async def revoke_breeding_slot(self, ctx, horse_id: int, user: discord.User):
+        # Vérifie que le cheval existe et appartient à l'auteur
+        horse_result = self.supabase.table("horses").select("owner_id").eq("horse_id", horse_id).execute()
+        if not horse_result.data:
+            await ctx.send("❌ Horse not found.")
+            return
+
+        horse = horse_result.data[0]
+        if str(ctx.author.id) != horse["owner_id"]:
+            await ctx.send("❌ You do not own this horse.")
+            return
+
+        # Vérifie s’il existe une autorisation pour cet utilisateur
+        permission_result = self.supabase.table("breeding_permissions").select("*").eq("horse_id", horse_id).eq("allowed_user_id", str(user.id)).execute()
+        if not permission_result.data:
+            await ctx.send(f"❌ {user.mention} does not have any slots for horse `{horse_id}`.")
+            return
+
+        # Supprime l’autorisation
+        self.supabase.table("breeding_permissions").delete().eq("id", permission_result.data[0]["id"]).execute()
+        await ctx.send(f"🗑️ Revoked all breeding permissions for horse `{horse_id}` from {user.mention}.")
 
 async def setup(bot, supabase):
     await bot.add_cog(SlotShare(bot, supabase))
