@@ -13,60 +13,60 @@ class SlotSharing(commands.Cog):
         if not horse_result.data:
             await ctx.send("❌ Horse not found.")
             return
-
         horse = horse_result.data[0]
 
-        # Get user ID of the command sender
-        user_result = self.supabase.table("users").select("user_id").eq("discord_id", str(ctx.author.id)).execute()
-        if not user_result.data:
+        # Get the invoking user's ID
+        invoker_result = self.supabase.table("users").select("user_id").eq("discord_id", str(ctx.author.id)).execute()
+        if not invoker_result.data:
             await ctx.send("❌ You are not registered.")
             return
+        invoker_id = invoker_result.data[0]["user_id"]
 
-        user_id = user_result.data[0]["user_id"]
-
-        # Check if the author is allowed to manage the horse (owner or shared slot)
-        is_owner = horse["owner_id"] == user_id
-        shared_slot_result = self.supabase.table("shared_slots").select("*").eq("horse_id", horse_id).eq("shared_with", user_id).execute()
-        has_access = bool(shared_slot_result.data)
-
-        if not is_owner and not has_access:
-            await ctx.send("❌ You do not own this horse or have access to manage its slots.")
+        # Ownership check
+        if horse["owner_id"] != invoker_id:
+            await ctx.send("❌ You do not own this horse.")
             return
 
         if horse.get("slots", 0) <= 0:
             await ctx.send("❌ This horse has no breeding slots left to share.")
             return
 
-        # Check target user
+        # Target user check
         target_result = self.supabase.table("users").select("user_id").eq("discord_id", str(target_user.id)).execute()
         if not target_result.data:
             await ctx.send("❌ The target user is not registered.")
             return
-
         target_id = target_result.data[0]["user_id"]
 
-        # Check if already shared
-        existing_share = self.supabase.table("shared_slots").select("*").eq("horse_id", horse_id).eq("shared_with", target_id).execute()
-        if existing_share.data:
+        # Prevent duplicate share
+        duplicate = self.supabase.table("shared_slots")\
+            .select("*")\
+            .eq("horse_id", horse_id)\
+            .eq("user_id", target_id)\
+            .execute()
+
+        if duplicate.data:
             await ctx.send("❌ You've already shared a slot of this horse with that user.")
             return
 
-        # Check total shared slots
-        shared_slots = self.supabase.table("shared_slots").select("*").eq("horse_id", horse_id).execute()
-        shared_count = len(shared_slots.data)
+        # Count shared slots for this horse
+        current_shares = self.supabase.table("shared_slots")\
+            .select("*")\
+            .eq("horse_id", horse_id)\
+            .execute()
 
-        if shared_count >= horse["slots"]:
+        if len(current_shares.data) >= horse["slots"]:
             await ctx.send("❌ You've already shared all available slots for this horse.")
             return
 
-        # Insert new share
+        # Share slot
         self.supabase.table("shared_slots").insert({
             "horse_id": horse_id,
-            "shared_with": target_id
+            "user_id": target_id,
+            "shared_by": invoker_id
         }).execute()
 
-        await ctx.send(f"✅ Shared one breeding slot of horse ID `{horse_id}` with {target_user.mention}.")
-
+        await ctx.send(f"✅ Successfully shared a slot of horse ID `{horse_id}` with {target_user.mention}.")
 
 async def setup(bot, supabase):
     await bot.add_cog(SlotSharing(bot, supabase))
