@@ -6,11 +6,12 @@ from datetime import datetime
 
 
 class XPQuestionnaireView(View):
-    def __init__(self, ctx, horse_id, supabase):
+    def __init__(self, ctx, horse_id, supabase, art_link):
         super().__init__(timeout=300)
         self.ctx = ctx
         self.horse_id = horse_id
         self.supabase = supabase
+        self.art_link = art_link
         self.answers = {}
         self.step = 0
         self.message = None
@@ -86,7 +87,7 @@ class XPQuestionnaireView(View):
             "horse_id": self.horse_id,
             "submitted_by": str(self.ctx.author.id),
             "xp": xp,
-            "art_link": "",  # You could add a follow-up to ask for this
+            "art_link": self.art_link,
             "status": "pending",
             "created_at": datetime.utcnow().isoformat()
         }).execute()
@@ -154,7 +155,11 @@ class Leveling(commands.Cog):
         self.supabase = supabase
 
     @commands.command(name="submitxp")
-    async def submit_xp(self, ctx, horse_id: int):
+    async def submit_xp(self, ctx, horse_id: int, art_link: str):
+        if not art_link.startswith("http"):
+            await ctx.send("❌ Please provide a valid art link.")
+            return
+
         horse = self.supabase.table("horses").select("owner_id").eq("horse_id", horse_id).execute()
         if not horse.data:
             await ctx.send("❌ Horse not found.")
@@ -163,7 +168,7 @@ class Leveling(commands.Cog):
             await ctx.send("❌ You do not own this horse.")
             return
 
-        view = XPQuestionnaireView(ctx, horse_id, self.supabase)
+        view = XPQuestionnaireView(ctx, horse_id, self.supabase, art_link)
         await view.update_step()
 
 async def setup(bot, supabase):
