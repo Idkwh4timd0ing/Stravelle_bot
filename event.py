@@ -21,10 +21,6 @@ class EventChoiceView(View):
         self.user_id = user_id
         self.art_link = art_link
 
-        for event, stat in EVENT_TYPES.items():
-            label = event.capitalize()
-            self.add_item(Button(label=label, custom_id=event))
-
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return str(interaction.user.id) == self.user_id
 
