@@ -284,7 +284,7 @@ class Leveling(commands.Cog):
         }).eq("horse_id", horse["horse_id"]).execute()
 
         # Post to dedicated channel and create thread
-        channel = discord.utils.get(self.bot.get_all_channels(), name="rank-ups")
+        channel = discord.utils.get(self.bot.get_all_channels(), name="✨▹rank-ups")
         if not channel:
             print("⚠️ Rank-up channel not found.")
             return
