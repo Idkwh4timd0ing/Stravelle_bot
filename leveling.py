@@ -156,9 +156,52 @@ class XPButton(Button):
         await self.view_ref.handle_answer(interaction, self.field, self.value)
 
 
+##########################
+# Approve and ranking up
+##########################
+
+LEVELS = [
+    (5000, "Legendary", 10, [
+        "Custom rank badge ✅",
+        "Custom trophy 🏆",
+        "Special rare tack ✨",
+        "Joins the Legendary registry 🔥"
+    ]),
+    (2500, "Master", 5, [
+        "Custom rank badge ✅",
+        "Free foal base 🐣",
+        "Special tack 🎽"
+    ]),
+    (1000, "Elite", 3, [
+        "Custom rank badge ✅",
+        "Free headshot base 🎨"
+    ]),
+    (500, "Advanced", 2, [
+        "Custom rank badge ✅"
+    ]),
+    (200, "Apprentice", 0, [
+        "Custom rank badge ✅",
+        "Custom Icon base 💠"
+    ]),
+    (50, "Novice", 1, [
+        "Custom rank badge ✅"
+    ]),
+    (0, "Registered", 0, [
+        "Eligible to participate in events & breeding"
+    ])
+]
+
+def get_rank_for_xp(xp):
+    for threshold, rank, slots, rewards in LEVELS:
+        if xp >= threshold:
+            return rank, slots, rewards
+    return "Registered", 0, []
+    
+
 class ApproveXPView(View):
-    def __init__(self, supabase, submission_id, horse_id, xp):
+    def __init__(self, bot, supabase, submission_id, horse_id, xp):
         super().__init__(timeout=300)
+        self.bot = bot
         self.supabase = supabase
         self.submission_id = submission_id
         self.horse_id = horse_id
@@ -166,21 +209,24 @@ class ApproveXPView(View):
 
     @discord.ui.button(label="✅ Approve", style=discord.ButtonStyle.success)
     async def approve(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Update submission to approved
         self.supabase.table("xp_submissions").update({"status": "approved"}).eq("id", self.submission_id).execute()
-        # Add XP to horse
-        horse = self.supabase.table("horses").select("xp").eq("horse_id", self.horse_id).execute()
-        if horse.data:
-            new_xp = horse.data[0]["xp"] + self.xp
+        horse_data = self.supabase.table("horses").select("*").eq("horse_id", self.horse_id).execute()
+        if horse_data.data:
+            horse = horse_data.data[0]
+            new_xp = horse["xp"] + self.xp
             self.supabase.table("horses").update({"xp": new_xp}).eq("horse_id", self.horse_id).execute()
-        await interaction.response.edit_message(content="✅ Submission approved and XP added.", view=None)
+            await interaction.response.edit_message(content="✅ Submission approved and XP added.", view=None)
+            # Trigger level check
+            leveling_cog = self.bot.get_cog("Leveling")
+            if leveling_cog:
+                await leveling_cog.check_level_up(horse)
+        else:
+            await interaction.response.send_message("❌ Horse not found.", ephemeral=True)
 
     @discord.ui.button(label="❌ Deny", style=discord.ButtonStyle.danger)
     async def deny(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.supabase.table("xp_submissions").update({"status": "denied"}).eq("id", self.submission_id).execute()
         await interaction.response.edit_message(content="❌ Submission denied.", view=None)
-
-
 
 class Leveling(commands.Cog):
     def __init__(self, bot, supabase):
@@ -220,9 +266,42 @@ class Leveling(commands.Cog):
             embed.add_field(name="Art Link", value=sub["art_link"], inline=False)
             embed.set_footer(text=f"Submission ID: {sub['id']}")
 
-            view = ApproveXPView(self.supabase, sub["id"], sub["horse_id"], sub["xp"])
+            view = ApproveXPView(self.bot, self.supabase, sub["id"], sub["horse_id"], sub["xp"])
             await ctx.send(embed=embed, view=view)
 
+    async def check_level_up(self, horse):
+        xp = horse["xp"]
+        current_rank = horse["rank"]
+        new_rank, bonus_slots, rewards = get_rank_for_xp(xp)
+
+        if LEVELS.index(next(l for l in LEVELS if l[1] == new_rank)) <= LEVELS.index(next(l for l in LEVELS if l[1] == current_rank)):
+            return  # Already at this or higher rank
+
+        # Update database
+        self.supabase.table("horses").update({
+            "rank": new_rank,
+            "slots": horse["slots"] + bonus_slots
+        }).eq("horse_id", horse["horse_id"]).execute()
+
+        # Post to dedicated channel and create thread
+        channel = discord.utils.get(self.bot.get_all_channels(), name="rank-ups")
+        if not channel:
+            print("⚠️ Rank-up channel not found.")
+            return
+
+        user_id = int(horse["owner_id"])
+        user = self.bot.get_user(user_id)
+        name = horse["name"] or f"Horse #{horse['horse_id']}"
+        rewards_text = "\n".join(f"- {r}" for r in rewards)
+
+        msg = await channel.send(
+            f"🎉 <@{user_id}> Your horse **{name}** just ranked up to **{new_rank}**!"
+        )
+
+        thread = await msg.create_thread(name=f"{name} – {new_rank}")
+        await thread.send(
+            f"**Level-Up Details**\n\n**Rank:** {new_rank}\n**Rewards Unlocked:**\n{rewards_text}"
+        )
 
 async def setup(bot, supabase):
     await bot.add_cog(Leveling(bot, supabase))
