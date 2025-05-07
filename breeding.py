@@ -144,16 +144,17 @@ class Breeding(commands.Cog):
                 "mutation": mutation
             }
 
+            self.supabase.table("horses").insert(foal_data).execute()
+            
             # Fetch stats of dam and sire
             dam_stats = self.supabase.table("horse_stats").select("*").eq("horse_id", dam["horse_id"]).execute().data[0]
             sire_stats = self.supabase.table("horse_stats").select("*").eq("horse_id", sire["horse_id"]).execute().data[0]
             
             # Generate foal stats and insert
-            foal_stats = generate_foal_stats(dam_stats, sire_stats)
+            foal_stats = generate_foal_stats(...)
             foal_stats["horse_id"] = foal_id
             self.supabase.table("horse_stats").insert(foal_stats).execute()
 
-            self.supabase.table("horses").insert(foal_data).execute()
             return foal_id, sex, foal_genotype, mutation, foal_stats
 
         
