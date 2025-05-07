@@ -142,21 +142,28 @@ class Events(commands.Cog):
 
     @commands.command(name="enterevent")
     async def enter_event(self, ctx, horse_id: int, art_link: str):
-        if not art_link.startswith("http"):
-            await ctx.send("❌ Please provide a valid art link (must start with http).")
-            return
+        try:
+            if not art_link.startswith("http"):
+                await ctx.send("❌ Please provide a valid art link.")
+                return
 
-        result = self.supabase.table("horses").select("owner_id", "name").eq("horse_id", horse_id).execute()
-        if not result.data:
-            await ctx.send("❌ Horse not found.")
-            return
-        horse = result.data[0]
-        if str(ctx.author.id) != horse["owner_id"]:
-            await ctx.send("❌ You do not own this horse.")
-            return
+            result = self.supabase.table("horses").select("owner_id", "name").eq("horse_id", horse_id).execute()
+            if not result.data:
+                await ctx.send("❌ Horse not found.")
+                return
 
-        view = EventChoiceView(self.bot, self.supabase, horse_id, ctx.author.id, art_link)
-        view.message = await ctx.send(f"🎠 Choose an event for **{horse['name'] or f'Horse #{horse_id}'}**:", view=view)
+            horse = result.data[0]
+            if str(ctx.author.id) != horse["owner_id"]:
+                await ctx.send("❌ You do not own this horse.")
+                return
+
+            view = EventChoiceView(self.bot, self.supabase, horse_id, ctx.author.id, art_link)
+            await ctx.send(f"🎠 Choose an event for **{horse['name'] or f'Horse #{horse_id}'}**:", view=view)
+
+        except Exception as e:
+            print("❌ Exception in !enterevent")
+            traceback.print_exc()
+            await ctx.send(f"❌ Something went wrong: `{e}`")
 
 
 async def setup(bot, supabase):
