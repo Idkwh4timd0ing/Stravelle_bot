@@ -4,11 +4,40 @@ from foal_genotype import generate_foal_genotype
 import random
 from datetime import datetime, timedelta
 
+ def generate_foal_stats(dam_stats, sire_stats):
+    def averaged_stat(dam_val, sire_val, min_val=1, max_val=10):
+        base = (dam_val + sire_val) // 2
+        variation = int(base * 0.05)
+        return max(min_val, min(max_val, random.randint(base - variation, base + variation)))
+
+    def averaged_height(dam_val, sire_val):
+        base = (dam_val + sire_val) // 2
+        variation = 5
+        return max(140, min(180, random.randint(base - variation, base + variation)))
+
+    return {
+        "agility_genetic": averaged_stat(dam_stats["agility_genetic"], sire_stats["agility_genetic"]),
+        "speed_genetic": averaged_stat(dam_stats["speed_genetic"], sire_stats["speed_genetic"]),
+        "endurance_genetic": averaged_stat(dam_stats["endurance_genetic"], sire_stats["endurance_genetic"]),
+        "intelligence_genetic": averaged_stat(dam_stats["intelligence_genetic"], sire_stats["intelligence_genetic"]),
+        "height_genetic": averaged_height(dam_stats["height_genetic"], sire_stats["height_genetic"]),
+    }
+
+def format_stats(stats):
+    return (
+        f"`Agi:` {stats['agility_genetic']} | "
+        f"`Spd:` {stats['speed_genetic']} | "
+        f"`End:` {stats['endurance_genetic']} | "
+        f"`Int:` {stats['intelligence_genetic']} | "
+        f"`Hgt:` {stats['height_genetic']} cm"
+    )
+
 class Breeding(commands.Cog):
     def __init__(self, bot, supabase):
         self.bot = bot
         self.supabase = supabase
 
+    
     @commands.command(name="breedhorse")
     async def breedhorse(self, ctx, dam_id: str, sire_id: str):
         # Fetch dam and sire from the database
@@ -115,24 +144,37 @@ class Breeding(commands.Cog):
                 "mutation": mutation
             }
 
-            self.supabase.table("horses").insert(foal_data).execute()
-            return foal_id, sex, foal_genotype, mutation
+            # Fetch stats of dam and sire
+            dam_stats = self.supabase.table("horse_stats").select("*").eq("horse_id", dam["horse_id"]).execute().data[0]
+            sire_stats = self.supabase.table("horse_stats").select("*").eq("horse_id", sire["horse_id"]).execute().data[0]
+            
+            # Generate foal stats and insert
+            foal_stats = generate_foal_stats(dam_stats, sire_stats)
+            foal_stats["horse_id"] = foal_id
+            self.supabase.table("horse_stats").insert(foal_stats).execute()
 
-        foal_id, sex, foal_genotype, mutation = create_foal()
+            self.supabase.table("horses").insert(foal_data).execute()
+            return foal_id, sex, foal_genotype, mutation, foal_stats
+
+        
+        foal_id, sex, foal_genotype, mutation, foal_stats = create_foal()
 
         if random.random() < 0.05:
-            foal_id2, sex2, foal_genotype2, mutation2 = create_foal()
+            foal_id2, sex2, foal_genotype2, mutation2, foal_stats2 = create_foal()
             await ctx.send(
-                f"🎉 Twins born!\n"
-                f"• Foal 1 → ID: {foal_id} | Sex: {sex} | Genotype: {foal_genotype}"
-                + (f" | Mutation: {mutation}" if mutation else "") + "\n"
-                f"• Foal 2 → ID: {foal_id2} | Sex: {sex2} | Genotype: {foal_genotype2}"
-                + (f" | Mutation: {mutation2}" if mutation2 else "")
+                f"🎉 **Twins born!**\n"
+                f"• Foal 1 → ID: `{foal_id}` | Sex: `{sex}` | Genotype: `{foal_genotype}`"
+                + (f" | Mutation: `{mutation}`" if mutation else "")
+                + f"\n  Stats: {format_stats(foal_stats)}\n"
+                f"• Foal 2 → ID: `{foal_id2}` | Sex: `{sex2}` | Genotype: `{foal_genotype2}`"
+                + (f" | Mutation: `{mutation2}`" if mutation2 else "")
+                + f"\n  Stats: {format_stats(foal_stats2)}"
             )
         else:
             await ctx.send(
-                f"🎉 Foal born! ID: {foal_id} | Sex: {sex} | Genotype: {foal_genotype}"
-                + (f" | Mutation: {mutation}" if mutation else "")
+                f"🎉 **Foal born!** ID: `{foal_id}` | Sex: `{sex}` | Genotype: `{foal_genotype}`"
+                + (f" | Mutation: `{mutation}`" if mutation else "")
+                + f"\n  Stats: {format_stats(foal_stats)}"
             )
 
         # Update cooldown for non-admins
