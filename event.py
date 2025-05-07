@@ -38,7 +38,9 @@ class EventChoiceView(View):
             last_time = datetime.fromisoformat(last_event)
             if (datetime.utcnow() - last_time).total_seconds() < 172800:
                 await interaction.response.send_message("⏳ You can only enter an event every 48 hours.", ephemeral=True)
-                # Fetch the horse's stats
+                return
+
+        # Fetch the horse's stats
         stats = self.supabase.table("horse_stats").select("*").eq("horse_id", self.horse_id).execute().data[0]
         if event_type == "eventing":
             score = sum([
@@ -70,9 +72,8 @@ class EventChoiceView(View):
                 line = f"{idx}. {name} – `{s:.1f}`"
                 result_msg += line + "\n"
             await channel.send(result_msg)
-                return
 
-        # Save entry
+        # ✅ Save entry and update cooldown (moved outside the if block)
         entry_id = str(uuid.uuid4())
         self.supabase.table("event_entries").insert({
             "id": entry_id,
@@ -85,6 +86,7 @@ class EventChoiceView(View):
 
         self.supabase.table("users").update({"last_event": datetime.utcnow().isoformat()}).eq("discord_id", str(self.user_id)).execute()
         await interaction.response.edit_message(content=f"✅ Horse entered into **{event_type.capitalize()}**!", view=None)
+
 
     @discord.ui.button(label="Dressage", style=discord.ButtonStyle.primary, custom_id="dressage")
     async def dressage(self, interaction: discord.Interaction, button: Button):
