@@ -135,7 +135,7 @@ class Events(commands.Cog):
             return
     
         view = EventChoiceView(self.bot, self.supabase, horse_id, ctx.author.id, art_link)
-        view.message = await ctx.send(
+        await ctx.send(
             f"🎠 Choose an event for **{horse['name'] or f'Horse #{horse_id}'}**:",
             view=view
         )
