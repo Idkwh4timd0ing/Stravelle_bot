@@ -104,15 +104,15 @@ class EventChoiceView(View):
             }
 
             result_msg = f"🏁 **{event_type.capitalize()} Event Results** 🏁\n\n"
-            for idx, (name, s, is_user) in enumerate(sorted_results, start=1):
+            for idx, (name, s) in enumerate(sorted_results, start=1):
                 line = f"{idx}. {name} – `{s:.1f}`"
                 
-                if is_user and idx <= 3:
+                if name == f"**{horse_name}**" and idx <= 3:
                     xp_gain = {1: 15, 2: 10, 3: 5}.get(idx, 0)
                     rosette_link = ROSETTE_LINKS.get(event_type, {}).get(idx)
                     if xp_gain:
                         self.supabase.table("horses").update({
-                            "xp": stats["xp"] + xp_gain
+                            "xp": current_xp + xp_gain
                         }).eq("horse_id", self.horse_id).execute()
                     if rosette_link:
                         line += f" 🏵️ [Rosette]({rosette_link}) +{xp_gain} XP"
