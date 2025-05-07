@@ -5,22 +5,34 @@ import random
 from datetime import datetime, timedelta
 
 def generate_foal_stats(dam_stats, sire_stats):
-    def averaged_stat(dam_val, sire_val, min_val=1, max_val=10):
-        base = (dam_val + sire_val) // 2
-        variation = int(base * 0.05)
-        return max(min_val, min(max_val, random.randint(base - variation, base + variation)))
+    # Moyennes de base
+    avg_agility = (dam_stats["agility_genetic"] + sire_stats["agility_genetic"]) // 2
+    avg_speed = (dam_stats["speed_genetic"] + sire_stats["speed_genetic"]) // 2
+    avg_endurance = (dam_stats["endurance_genetic"] + sire_stats["endurance_genetic"]) // 2
+    avg_intelligence = (dam_stats["intelligence_genetic"] + sire_stats["intelligence_genetic"]) // 2
+    avg_height = (dam_stats["height_genetic"] + sire_stats["height_genetic"]) // 2
 
-    def averaged_height(dam_val, sire_val):
-        base = (dam_val + sire_val) // 2
-        variation = 5
-        return max(140, min(180, random.randint(base - variation, base + variation)))
+    # Variations aléatoires
+    agility = random.randint(avg_agility - 1, avg_agility + 1)
+    speed = random.randint(avg_speed - 1, avg_speed + 1)
+    endurance = random.randint(avg_endurance - 1, avg_endurance + 1)
+    intelligence = random.randint(avg_intelligence - 1, avg_intelligence + 1)
+    height = random.randint(avg_height - 10, avg_height + 10)
 
+    # Bornes pour rester cohérent
+    agility = max(1, min(10, agility))
+    speed = max(1, min(10, speed))
+    endurance = max(1, min(10, endurance))
+    intelligence = max(1, min(10, intelligence))
+    height = max(160, min(185, height))
+
+    # Format final à insérer
     return {
-        "agility_genetic": averaged_stat(dam_stats["agility_genetic"], sire_stats["agility_genetic"]),
-        "speed_genetic": averaged_stat(dam_stats["speed_genetic"], sire_stats["speed_genetic"]),
-        "endurance_genetic": averaged_stat(dam_stats["endurance_genetic"], sire_stats["endurance_genetic"]),
-        "intelligence_genetic": averaged_stat(dam_stats["intelligence_genetic"], sire_stats["intelligence_genetic"]),
-        "height_genetic": averaged_height(dam_stats["height_genetic"], sire_stats["height_genetic"]),
+        "agility_genetic": agility,
+        "speed_genetic": speed,
+        "endurance_genetic": endurance,
+        "intelligence_genetic": intelligence,
+        "height_genetic": height
     }
 
 def format_stats(stats):
