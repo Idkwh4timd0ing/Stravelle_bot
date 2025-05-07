@@ -21,6 +21,7 @@ class EventChoiceView(View):
         self.horse_id = horse_id
         self.user_id = user_id
         self.art_link = art_link
+        self.message = None
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return str(interaction.user.id) == self.user_id
@@ -91,7 +92,6 @@ class EventChoiceView(View):
                 pass
 
 
-
     @discord.ui.button(label="Dressage", style=discord.ButtonStyle.primary, custom_id="dressage")
     async def dressage(self, interaction: discord.Interaction, button: Button):
         await self.on_event_selected(interaction, "dressage")
@@ -135,7 +135,8 @@ class Events(commands.Cog):
             return
     
         view = EventChoiceView(self.bot, self.supabase, horse_id, ctx.author.id, art_link)
-        view.message = await ctx.send(f"🎠 Choose an event for **{horse['name'] or f'Horse #{horse_id}'}**:", view=view)
+        msg = await ctx.send(...)
+        view.message = msg
 
 
 async def setup(bot, supabase):
