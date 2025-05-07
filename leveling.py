@@ -232,6 +232,7 @@ class Leveling(commands.Cog):
     def __init__(self, bot, supabase):
         self.bot = bot
         self.supabase = supabase
+        self.__cog_name__ = "Leveling"
 
     @commands.command(name="submitxp")
     async def submit_xp(self, ctx, horse_id: int, art_link: str):
@@ -274,8 +275,9 @@ class Leveling(commands.Cog):
         current_rank = horse["rank"]
         new_rank, bonus_slots, rewards = get_rank_for_xp(xp)
 
-        if LEVELS.index(next(l for l in LEVELS if l[1] == new_rank)) <= LEVELS.index(next(l for l in LEVELS if l[1] == current_rank)):
-            return  # Already at this or higher rank
+        if LEVELS.index(next(l for l in LEVELS if l[1] == new_rank)) == \
+           LEVELS.index(next(l for l in LEVELS if l[1] == current_rank)):
+            return
 
         # Update database
         self.supabase.table("horses").update({
@@ -285,6 +287,7 @@ class Leveling(commands.Cog):
 
         # Post to dedicated channel and create thread
         channel = discord.utils.get(self.bot.get_all_channels(), name="✨▹rank-ups")
+        print([c.name for c in self.bot.get_all_channels()])
         if not channel:
             print("⚠️ Rank-up channel not found.")
             return
