@@ -151,7 +151,7 @@ class Breeding(commands.Cog):
             sire_stats = self.supabase.table("horse_stats").select("*").eq("horse_id", sire["horse_id"]).execute().data[0]
             
             # Generate foal stats and insert
-            foal_stats = generate_foal_stats(...)
+            foal_stats = generate_foal_stats(dam_stats, sire_stats)
             foal_stats["horse_id"] = foal_id
             self.supabase.table("horse_stats").insert(foal_stats).execute()
 
