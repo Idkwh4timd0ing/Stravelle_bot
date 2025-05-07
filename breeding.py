@@ -4,7 +4,7 @@ from foal_genotype import generate_foal_genotype
 import random
 from datetime import datetime, timedelta
 
- def generate_foal_stats(dam_stats, sire_stats):
+def generate_foal_stats(dam_stats, sire_stats):
     def averaged_stat(dam_val, sire_val, min_val=1, max_val=10):
         base = (dam_val + sire_val) // 2
         variation = int(base * 0.05)
