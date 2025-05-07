@@ -135,8 +135,10 @@ class Events(commands.Cog):
             return
     
         view = EventChoiceView(self.bot, self.supabase, horse_id, ctx.author.id, art_link)
-        msg = await ctx.send(...)
+        
+        msg = await ctx.send(f"🎠 Choose an event for **{horse['name'] or f'Horse #{horse_id}'}**:")
         view.message = msg
+        await msg.edit(view=view)
 
 
 async def setup(bot, supabase):
