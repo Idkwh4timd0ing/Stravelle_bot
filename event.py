@@ -4,6 +4,7 @@ from discord.ui import View, Button
 import uuid
 from datetime import datetime
 import random
+import traceback
 
 EVENT_TYPES = {
     "dressage": "agility",
@@ -13,16 +14,6 @@ EVENT_TYPES = {
     "eventing": "overall"
 }
 
-ROSETTE_LINKS = {
-    1: "https://link.to/1st_place_rosette.png",
-    2: "https://link.to/2nd_place_rosette.png",
-    3: "https://link.to/3rd_place_rosette.png"
-}
-
-NPC_NAMES = [
-    "Stormchaser", "Wildfire", "Dusktreader", "Silvermane", "Shadowstep",
-    "Frostbite", "Bravestone", "Moondancer", "Copperhoof", "Nightbloom"
-]
 
 class EventChoiceView(View):
     def __init__(self, bot, supabase, horse_id, user_id, art_link):
@@ -32,18 +23,20 @@ class EventChoiceView(View):
         self.horse_id = horse_id
         self.user_id = user_id
         self.art_link = art_link
-        self.message = None
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        return str(interaction.user.id) == self.user_id
+        return str(interaction.user.id) == str(self.user_id)
 
     async def on_timeout(self):
         for item in self.children:
             item.disabled = True
-        await self.message.edit(content="⏰ Timed out. Please try again.", view=self)
+        # Can't edit the message here since we didn't store it — safe to ignore
 
     async def on_event_selected(self, interaction: discord.Interaction, event_type: str):
         try:
+            print(f"📩 Event selected: {event_type} by user {self.user_id} for horse {self.horse_id}")
+
+            # Check cooldown
             user_data = self.supabase.table("users").select("*").eq("discord_id", str(self.user_id)).execute().data[0]
             last_event = user_data.get("last_event")
             if last_event:
@@ -52,10 +45,13 @@ class EventChoiceView(View):
                     await interaction.response.send_message("⏳ You can only enter an event every 48 hours.", ephemeral=True)
                     return
 
-            horse_data = self.supabase.table("horses").select("name").eq("horse_id", self.horse_id).execute().data[0]
-            horse_name = horse_data["name"] or f"Horse #{self.horse_id}"
+            # Fetch the horse's stats
+            stats_data = self.supabase.table("horse_stats").select("*").eq("horse_id", self.horse_id).execute().data
+            if not stats_data:
+                await interaction.response.send_message("❌ Could not find horse stats.", ephemeral=True)
+                return
 
-            stats = self.supabase.table("horse_stats").select("*").eq("horse_id", self.horse_id).execute().data[0]
+            stats = stats_data[0]
             if event_type == "eventing":
                 score = sum([
                     stats["agility_genetic"] + stats["agility_trained"],
@@ -67,33 +63,27 @@ class EventChoiceView(View):
                 stat_name = EVENT_TYPES[event_type]
                 score = stats[f"{stat_name}_genetic"] + stats.get(f"{stat_name}_trained", 0)
 
-            competitors = [
-                (random.choice(NPC_NAMES), random.randint(4, 18)) for _ in range(4)
-            ]
-            competitors.append((f"**{horse_name}**", score))
+            # Generate NPC competitors
+            competitors = [(f"NPC #{i+1}", random.randint(4, 18)) for i in range(4)]
+            competitors.append((f"**{interaction.user.display_name}**’s horse", score))
 
             sorted_results = sorted(competitors, key=lambda x: x[1], reverse=True)
 
             result_msg = f"🏁 **{event_type.capitalize()} Event Results** 🏁\n\n"
-            xp_reward = 0
             for idx, (name, s) in enumerate(sorted_results, start=1):
                 result_msg += f"{idx}. {name} – `{s:.1f}`\n"
-                if name == f"**{horse_name}**" and idx <= 3:
-                    xp_reward = {1: 15, 2: 10, 3: 5}[idx]
-                    rosette = ROSETTE_LINKS[idx]
-                    result_msg += f"🎉 **{horse_name}** earned **{xp_reward} XP** and received a [rosette 🏵️]({rosette})!\n\n"
 
+            # Post in channel
             channel = discord.utils.get(interaction.guild.text_channels, name="🏅▹competition")
             if channel:
                 await channel.send(result_msg)
+            else:
+                await interaction.followup.send("⚠️ Could not find #🏅▹competition channel.", ephemeral=True)
 
-            if xp_reward > 0:
-                self.supabase.table("horses").update({
-                    "xp": stats.get("xp", 0) + xp_reward
-                }).eq("horse_id", self.horse_id).execute()
-
+            # Save entry
+            entry_id = str(uuid.uuid4())
             self.supabase.table("event_entries").insert({
-                "id": str(uuid.uuid4()),
+                "id": entry_id,
                 "horse_id": self.horse_id,
                 "event_type": event_type,
                 "submitted_by": str(self.user_id),
@@ -101,36 +91,37 @@ class EventChoiceView(View):
                 "created_at": datetime.utcnow().isoformat()
             }).execute()
 
-            self.supabase.table("users").update({
-                "last_event": datetime.utcnow().isoformat()
-            }).eq("discord_id", str(self.user_id)).execute()
+            # Update cooldown
+            self.supabase.table("users").update({"last_event": datetime.utcnow().isoformat()}).eq("discord_id", str(self.user_id)).execute()
 
             await interaction.response.edit_message(content=f"✅ Horse entered into **{event_type.capitalize()}**!", view=None)
 
         except Exception as e:
-            print(f"⚠️ Event error: {e}")
+            print("❌ Exception in event selection!")
+            traceback.print_exc()
             try:
-                await interaction.response.send_message("❌ An error occurred. Please contact a mod.", ephemeral=True)
-            except:
-                pass
+                await interaction.response.send_message(f"❌ Error occurred: `{e}`", ephemeral=True)
+            except discord.InteractionResponded:
+                await interaction.followup.send(f"❌ Error occurred after button click: `{e}`", ephemeral=True)
 
-    @discord.ui.button(label="Dressage", style=discord.ButtonStyle.primary, custom_id="dressage")
+
+    @discord.ui.button(label="Dressage", style=discord.ButtonStyle.primary)
     async def dressage(self, interaction: discord.Interaction, button: Button):
         await self.on_event_selected(interaction, "dressage")
 
-    @discord.ui.button(label="Showjumping", style=discord.ButtonStyle.primary, custom_id="showjumping")
+    @discord.ui.button(label="Showjumping", style=discord.ButtonStyle.primary)
     async def showjumping(self, interaction: discord.Interaction, button: Button):
         await self.on_event_selected(interaction, "showjumping")
 
-    @discord.ui.button(label="Endurance", style=discord.ButtonStyle.primary, custom_id="endurance")
+    @discord.ui.button(label="Endurance", style=discord.ButtonStyle.primary)
     async def endurance(self, interaction: discord.Interaction, button: Button):
         await self.on_event_selected(interaction, "endurance")
 
-    @discord.ui.button(label="Liberty", style=discord.ButtonStyle.primary, custom_id="liberty")
+    @discord.ui.button(label="Liberty", style=discord.ButtonStyle.primary)
     async def liberty(self, interaction: discord.Interaction, button: Button):
         await self.on_event_selected(interaction, "liberty")
 
-    @discord.ui.button(label="Eventing", style=discord.ButtonStyle.secondary, custom_id="eventing")
+    @discord.ui.button(label="Eventing", style=discord.ButtonStyle.secondary)
     async def eventing(self, interaction: discord.Interaction, button: Button):
         await self.on_event_selected(interaction, "eventing")
 
