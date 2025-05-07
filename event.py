@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord.ui import View, Button
 import uuid
 from datetime import datetime
+import random
 
 EVENT_TYPES = {
     "dressage": "agility",
@@ -37,6 +38,38 @@ class EventChoiceView(View):
             last_time = datetime.fromisoformat(last_event)
             if (datetime.utcnow() - last_time).total_seconds() < 172800:
                 await interaction.response.send_message("⏳ You can only enter an event every 48 hours.", ephemeral=True)
+                # Fetch the horse's stats
+        stats = self.supabase.table("horse_stats").select("*").eq("horse_id", self.horse_id).execute().data[0]
+        if event_type == "eventing":
+            score = sum([
+                stats["agility_genetic"] + stats["agility_trained"],
+                stats["speed_genetic"] + stats["speed_trained"],
+                stats["endurance_genetic"] + stats["endurance_trained"],
+                stats["intelligence_genetic"] + stats["intelligence_trained"]
+            ]) / 4
+        else:
+            stat_name = EVENT_TYPES[event_type]
+            score = stats[f"{stat_name}_genetic"] + stats.get(f"{stat_name}_trained", 0)
+
+        # Create 4 fake competitors
+        competitors = []
+        for i in range(4):
+            fake_score = random.randint(4, 18)
+            competitors.append((f"NPC #{i+1}", fake_score))
+
+        competitors.append((f"**{interaction.user.display_name}**’s horse", score))
+
+        # Sort by score
+        sorted_results = sorted(competitors, key=lambda x: x[1], reverse=True)
+
+        # Post results in the event channel
+        channel = discord.utils.get(interaction.guild.text_channels, name="🏅▹competition")
+        if channel:
+            result_msg = f"🏁 **{event_type.capitalize()} Event Results** 🏁\n\n"
+            for idx, (name, s) in enumerate(sorted_results, start=1):
+                line = f"{idx}. {name} – `{s:.1f}`"
+                result_msg += line + "\n"
+            await channel.send(result_msg)
                 return
 
         # Save entry
