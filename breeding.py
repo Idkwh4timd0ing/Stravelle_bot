@@ -152,7 +152,7 @@ class Breeding(commands.Cog):
                 "registry": None,
                 "ref_link": "",
                 "xp": 0,
-                "rank": "Registered",
+                "rank": "Unregistered",
                 "mutation": mutation
             }
 
