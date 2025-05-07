@@ -156,6 +156,32 @@ class XPButton(Button):
         await self.view_ref.handle_answer(interaction, self.field, self.value)
 
 
+class ApproveXPView(View):
+    def __init__(self, supabase, submission_id, horse_id, xp):
+        super().__init__(timeout=300)
+        self.supabase = supabase
+        self.submission_id = submission_id
+        self.horse_id = horse_id
+        self.xp = xp
+
+    @discord.ui.button(label="✅ Approve", style=discord.ButtonStyle.success)
+    async def approve(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Update submission to approved
+        self.supabase.table("xp_submissions").update({"status": "approved"}).eq("id", self.submission_id).execute()
+        # Add XP to horse
+        horse = self.supabase.table("horses").select("xp").eq("horse_id", self.horse_id).execute()
+        if horse.data:
+            new_xp = horse.data[0]["xp"] + self.xp
+            self.supabase.table("horses").update({"xp": new_xp}).eq("horse_id", self.horse_id).execute()
+        await interaction.response.edit_message(content="✅ Submission approved and XP added.", view=None)
+
+    @discord.ui.button(label="❌ Deny", style=discord.ButtonStyle.danger)
+    async def deny(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.supabase.table("xp_submissions").update({"status": "denied"}).eq("id", self.submission_id).execute()
+        await interaction.response.edit_message(content="❌ Submission denied.", view=None)
+
+
+
 class Leveling(commands.Cog):
     def __init__(self, bot, supabase):
         self.bot = bot
@@ -177,6 +203,26 @@ class Leveling(commands.Cog):
 
         view = XPQuestionnaireView(ctx, horse_id, self.supabase, art_link)
         await view.update_step()
+
+    @commands.command(name="reviewxp")
+    @commands.has_permissions(administrator=True)
+    async def review_xp(self, ctx):
+        pending = self.supabase.table("xp_submissions").select("*").eq("status", "pending").execute()
+        if not pending.data:
+            await ctx.send("✅ No pending XP submissions.")
+            return
+
+        for sub in pending.data:
+            embed = discord.Embed(title="📩 XP Submission Review", color=0x3498db)
+            embed.add_field(name="Horse ID", value=sub["horse_id"], inline=True)
+            embed.add_field(name="Submitted by", value=f"<@{sub['submitted_by']}>", inline=True)
+            embed.add_field(name="XP Requested", value=sub["xp"], inline=False)
+            embed.add_field(name="Art Link", value=sub["art_link"], inline=False)
+            embed.set_footer(text=f"Submission ID: {sub['id']}")
+
+            view = ApproveXPView(self.supabase, sub["id"], sub["horse_id"], sub["xp"])
+            await ctx.send(embed=embed, view=view)
+
 
 async def setup(bot, supabase):
     await bot.add_cog(Leveling(bot, supabase))
