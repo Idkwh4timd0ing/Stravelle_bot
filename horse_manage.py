@@ -49,18 +49,20 @@ class HorseManagement(commands.Cog):
 
     @commands.command(name="horseprofile")
     async def horse_profile(self, ctx, horse_id: int):
-        horse = self.supabase.table("horses").select("*").eq("horse_id", horse_id).execute()
-
-        if not horse.data:
+        horse_result = self.supabase.table("horses").select("*").eq("horse_id", horse_id).execute()
+        stats_result = self.supabase.table("horse_stats").select("*").eq("horse_id", horse_id).execute()
+    
+        if not horse_result.data:
             await ctx.send(f"❌ Horse #{horse_id} not found.")
             return
-
-        horse = horse.data[0]
-
+    
+        horse = horse_result.data[0]
+        stats = stats_result.data[0] if stats_result.data else None
+    
         if str(ctx.author.id) != horse["owner_id"]:
             await ctx.send("❌ You do not own this horse.")
             return
-
+    
         embed = discord.Embed(
             title=f"🐴 Horse #{horse_id} - {horse['name'] or 'Unnamed'}",
             color=0x9b59b6
@@ -74,8 +76,19 @@ class HorseManagement(commands.Cog):
         embed.add_field(name="XP", value=horse["xp"], inline=True)
         embed.add_field(name="Rank", value=horse["rank"], inline=True)
         embed.add_field(name="Ref Link", value=horse["ref_link"] or "No link", inline=False)
-
+    
+        if stats:
+            stats_text = (
+                f"Agility: {stats['agility_trained']}/{stats['agility_genetic']}\n"
+                f"Speed: {stats['speed_trained']}/{stats['speed_genetic']}\n"
+                f"Endurance: {stats['endurance_trained']}/{stats['endurance_genetic']}\n"
+                f"Intelligence: {stats['intelligence_trained']}/{stats['intelligence_genetic']}\n"
+                f"Height: {stats['height_genetic']} cm"
+            )
+            embed.add_field(name="📊 Stats", value=stats_text, inline=False)
+    
         await ctx.send(embed=embed)
+
 
     @commands.command(name="editname")
     async def edit_name(self, ctx, horse_id: int, *, new_name: str):
