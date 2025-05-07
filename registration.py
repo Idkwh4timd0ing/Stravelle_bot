@@ -6,20 +6,21 @@ class Registration(commands.Cog):
         self.bot = bot
         self.supabase = supabase
 
-    # Admin-only command to register a new horse
     @commands.command(name="registerhorse")
     @commands.check(lambda ctx: str(ctx.author.id) == "999697174210289784")
-    async def register_horse(self, ctx, horse_id: int, sex: str, genotype: str):
+    async def register_horse(self, ctx, horse_id: int, sex: str, genotype: str,
+                             agi: int, spe: int, endu: int, intl: int, hei: int):
         if sex.upper() not in ("M", "F", "G"):
             await ctx.send("❌ Invalid sex. Use M (male), F (female), or G (gelded).")
             return
-
+    
         existing = self.supabase.table("horses").select("*").eq("horse_id", horse_id).execute()
-        if existing.data and len(existing.data) > 0:
+        if existing.data:
             await ctx.send(f"❌ A horse with ID {horse_id} already exists.")
             return
-
+    
         try:
+            # Insert horse into main table
             self.supabase.table("horses").insert({
                 "horse_id": horse_id,
                 "sex": sex.upper(),
@@ -33,10 +34,22 @@ class Registration(commands.Cog):
                 "xp": 0,
                 "rank": "Registered"
             }).execute()
-            await ctx.send(f"✅ Horse #{horse_id} successfully registered!")
+    
+            # Insert corresponding stats
+            self.supabase.table("horse_stats").insert({
+                "horse_id": horse_id,
+                "agility_genetic": agi,
+                "speed_genetic": spe,
+                "endurance_genetic": endu,
+                "intelligence_genetic": intl,
+                "height_genetic": hei
+            }).execute()
+    
+            await ctx.send(f"✅ Horse #{horse_id} successfully registered with stats!")
         except Exception as e:
             print(f"Insert failed: {e}")
             await ctx.send("❌ Something went wrong during horse registration.")
+
 
     # Admin-only command to assign a horse to a user
     @commands.command(name="assignhorse")
