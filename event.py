@@ -72,25 +72,53 @@ class EventChoiceView(View):
             random.shuffle(npc_names)
             competitors = [(name, random.randint(4, 18)) for name in npc_names[:4]]
             competitors.append((f"**{horse_name}**", score))
-    
+
             sorted_results = sorted(competitors, key=lambda x: x[1], reverse=True)
-            result_msg = f"🏁 **{event_type.capitalize()} Event Results** 🏁\n\n"
-    
-            # XP and rosette rewards
-            rewards = {
-                1: (15, "https://example.com/rosette1.png"),
-                2: (10, "https://example.com/rosette2.png"),
-                3: (5, "https://example.com/rosette3.png")
+            
+            ROSETTE_LINKS = {
+                "dressage": {
+                    1: "https://www.deviantart.com/stash/01uga92i10m1",
+                    2: "https://www.deviantart.com/stash/02bsfmoaqzf9",
+                    3: "https://www.deviantart.com/stash/01og8zly3ekk"
+                },
+                "showjumping": {
+                    1: "https://www.deviantart.com/stash/09928zynqvi",
+                    2: "https://www.deviantart.com/stash/0ahvfr0xi6t",
+                    3: "https://www.deviantart.com/stash/0pvy8cayblz"
+                },
+                "endurance": {
+                    1: "https://www.deviantart.com/stash/01q4l8p966f7",
+                    2: "https://www.deviantart.com/stash/0281xsm2q9tn",
+                    3: "https://www.deviantart.com/stash/04wpyo2gaxl"
+                },
+                "liberty": {
+                    1: "https://www.deviantart.com/stash/02wgu4610ch",
+                    2: "https://www.deviantart.com/stash/03g421tzb3w",
+                    3: "https://www.deviantart.com/stash/0109vkw9csmv"
+                },
+                "eventing": {
+                    1: "https://www.deviantart.com/stash/01vkhxyzp63a",
+                    2: "https://www.deviantart.com/stash/01358urjitdy",
+                    3: "https://www.deviantart.com/stash/0157gg4hwhd5"
+                }
             }
-    
-            for idx, (name, s) in enumerate(sorted_results, start=1):
-                reward_msg = ""
-                if name == f"**{horse_name}**" and idx in rewards:
-                    gained_xp, rosette_url = rewards[idx]
-                    new_xp = current_xp + gained_xp
-                    self.supabase.table("horses").update({"xp": new_xp}).eq("horse_id", self.horse_id).execute()
-                    reward_msg = f" 🥇 +{gained_xp} XP – [Rosette]({rosette_url})"
-                result_msg += f"{idx}. {name} – `{s:.1f}`{reward_msg}\n"
+
+            result_msg = f"🏁 **{event_type.capitalize()} Event Results** 🏁\n\n"
+            for idx, (name, s, is_user) in enumerate(sorted_results, start=1):
+                line = f"{idx}. {name} – `{s:.1f}`"
+                
+                if is_user and idx <= 3:
+                    xp_gain = {1: 15, 2: 10, 3: 5}.get(idx, 0)
+                    rosette_link = ROSETTE_LINKS.get(event_type, {}).get(idx)
+                    if xp_gain:
+                        self.supabase.table("horses").update({
+                            "xp": stats["xp"] + xp_gain
+                        }).eq("horse_id", self.horse_id).execute()
+                    if rosette_link:
+                        line += f" 🏵️ [Rosette]({rosette_link}) +{xp_gain} XP"
+            
+                result_msg += line + "\n"
+
     
             # Send results to channel
             channel = discord.utils.get(interaction.guild.text_channels, name="🏅▹competition")
