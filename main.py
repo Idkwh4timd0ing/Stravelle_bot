@@ -10,6 +10,9 @@ from breeding import setup as breeding_setup
 from slotshare import setup as slotshare_setup 
 from leveling import setup as leveling_setup
 from training import setup as training_setup
+from event import setup as event_setup
+
+
 
 # Set up Discord bot with prefix '!'
 intents = discord.Intents.default()
@@ -61,6 +64,7 @@ async def on_ready():
         await slotshare_setup(bot, supabase)
         await leveling_setup(bot, supabase)
         await training_setup(bot, supabase) 
+        await event_setup(bot, supabase)
 
         bot.add_view(PersistentRulesView())
 
