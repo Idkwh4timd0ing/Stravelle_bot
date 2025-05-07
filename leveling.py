@@ -77,8 +77,15 @@ class XPQuestionnaireView(View):
 
     async def handle_answer(self, interaction, field, value):
         self.answers[field] = value
+    
+        # Special case: if art is by someone else, stop here
+        if field == "artist" and value == "other":
+            await self.finish(interaction)
+            return
+    
         self.step += 1
         await self.update_step(interaction)
+
 
     async def finish(self, interaction):
         xp = self.calculate_xp()
