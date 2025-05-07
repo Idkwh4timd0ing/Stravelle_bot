@@ -13,8 +13,8 @@ EVENT_TYPES = {
 }
 
 class EventChoiceView(View):
-    def __init__(self, bot, supabase, horse_id, user_id):
-        super().__init__(timeout=60)
+    def __init__(self, bot, supabase, horse_id, user_id, art_link):
+        super().__init__(timeout=120)
         self.bot = bot
         self.supabase = supabase
         self.horse_id = horse_id
