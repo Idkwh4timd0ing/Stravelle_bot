@@ -9,7 +9,7 @@ from horse_manage import setup as manage_setup
 from breeding import setup as breeding_setup
 from slotshare import setup as slotshare_setup 
 from leveling import setup as leveling_setup
-
+from training import setup as training_setup
 
 # Set up Discord bot with prefix '!'
 intents = discord.Intents.default()
@@ -60,6 +60,7 @@ async def on_ready():
         await breeding_setup(bot, supabase)
         await slotshare_setup(bot, supabase)
         await leveling_setup(bot, supabase)
+        await training_setup(bot, supabase) 
 
         bot.add_view(PersistentRulesView())
 
