@@ -121,7 +121,12 @@ class EventChoiceView(View):
 
     
             # Send results to channel
-            forum_channel = discord.utils.get(interaction.guild.forum_channels, name="🏅▹competition")
+            forum_channel = discord.utils.get(
+                interaction.guild.channels,
+                name="🏅▹competition",
+                type=discord.ChannelType.forum
+            )
+
             if forum_channel:
                 thread = await forum_channel.create_thread(
                     name=f"{event_type.capitalize()} Event – {horse_name}",
