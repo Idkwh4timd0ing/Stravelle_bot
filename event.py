@@ -121,11 +121,15 @@ class EventChoiceView(View):
 
     
             # Send results to channel
-            channel = discord.utils.get(interaction.guild.text_channels, name="🏅▹competition")
-            if channel:
-                await channel.send(result_msg)
+            forum_channel = discord.utils.get(interaction.guild.forum_channels, name="🏅▹competition")
+            if forum_channel:
+                thread = await forum_channel.create_thread(
+                    name=f"{event_type.capitalize()} Event – {horse_name}",
+                    content=result_msg
+                )
             else:
-                await interaction.followup.send("⚠️ Could not find #🏅▹competition channel.", ephemeral=True)
+                await interaction.followup.send("⚠️ Could not find #🏅▹competition forum channel.", ephemeral=True)
+
     
             # Save entry and cooldown
             entry_id = str(uuid.uuid4())
