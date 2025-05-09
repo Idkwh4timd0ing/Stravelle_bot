@@ -105,7 +105,7 @@ class EventChoiceView(View):
 
             result_msg = f"🏁 **{event_type.capitalize()} Event Results** 🏁\n\n"
             for idx, (name, s) in enumerate(sorted_results, start=1):
-                line = f"{idx}. {name} – `{s:.1f}`"
+                line = f"{idx}. {name} – {s:.1f}"
                 
                 if name == f"**{horse_name}**" and idx <= 3:
                     xp_gain = {1: 15, 2: 10, 3: 5}.get(idx, 0)
@@ -121,20 +121,11 @@ class EventChoiceView(View):
 
     
             # Send results to channel
-            forum_channel = discord.utils.get(
-                interaction.guild.channels,
-                name="🏅▹competition",
-                type=discord.ChannelType.forum
-            )
-
-            if forum_channel:
-                thread = await forum_channel.create_thread(
-                    name=f"{event_type.capitalize()} Event – {horse_name}",
-                    content=result_msg
-                )
+            channel = discord.utils.get(interaction.guild.text_channels, name="🏅▹competition")
+            if channel:
+                await channel.send(result_msg)
             else:
-                await interaction.followup.send("⚠️ Could not find #🏅▹competition forum channel.", ephemeral=True)
-
+                await interaction.followup.send("⚠️ Could not find #🏅▹competition channel.", ephemeral=True)
     
             # Save entry and cooldown
             entry_id = str(uuid.uuid4())
@@ -155,9 +146,9 @@ class EventChoiceView(View):
             print("❌ Exception in event selection!")
             traceback.print_exc()
             try:
-                await interaction.response.send_message(f"❌ Error occurred: `{e}`", ephemeral=True)
+                await interaction.response.send_message(f"❌ Error occurred: {e}", ephemeral=True)
             except discord.InteractionResponded:
-                await interaction.followup.send(f"❌ Error occurred after button click: `{e}`", ephemeral=True)
+                await interaction.followup.send(f"❌ Error occurred after button click: {e}", ephemeral=True)
     
 
 
@@ -210,7 +201,7 @@ class Events(commands.Cog):
         except Exception as e:
             print("❌ Exception in !enterevent")
             traceback.print_exc()
-            await ctx.send(f"❌ Something went wrong: `{e}`")
+            await ctx.send(f"❌ Something went wrong: {e}")
 
 
 async def setup(bot, supabase):
