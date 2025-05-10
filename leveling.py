@@ -21,7 +21,7 @@ class XPQuestionnaireView(View):
 
     async def on_timeout(self):
         if self.message:
-            await self.message.edit(content="⏰ Time’s up! Please try again.", view=None)
+            await self.message.edit(content="Your submission will soon be reviewed, please wait.", view=None)
 
     async def update_step(self, interaction=None):
         self.clear_items()
@@ -96,7 +96,7 @@ class XPQuestionnaireView(View):
             "xp": xp,
             "art_link": self.art_link,
             "status": "pending",
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": date.utcnow().isoformat()
         }).execute()
         await interaction.response.edit_message(content=f"✅ Submission complete! Pending approval.\nXP earned: **{xp}**", view=None)
 
@@ -209,7 +209,7 @@ def get_rank_for_xp(xp):
 
 class ApproveXPView(View):
     def __init__(self, bot, supabase, submission_id, horse_id, xp):
-        super().__init__(timeout=300)
+        super().__init__(out=300)
         self.bot = bot
         self.supabase = supabase
         self.submission_id = submission_id
