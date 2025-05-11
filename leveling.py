@@ -96,7 +96,7 @@ class XPQuestionnaireView(View):
             "xp": xp,
             "art_link": self.art_link,
             "status": "pending",
-            "created_at": date.utcnow().isoformat()
+            "created_at": datetime.utcnow().isoformat()
         }).execute()
         await interaction.response.edit_message(content=f"✅ Submission complete! Pending approval.\nXP earned: **{xp}**", view=None)
 
