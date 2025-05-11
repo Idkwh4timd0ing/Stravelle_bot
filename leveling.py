@@ -209,7 +209,7 @@ def get_rank_for_xp(xp):
 
 class ApproveXPView(View):
     def __init__(self, bot, supabase, submission_id, horse_id, xp):
-        super().__init__(out=300)
+        super().__init__(timeout=300)
         self.bot = bot
         self.supabase = supabase
         self.submission_id = submission_id
