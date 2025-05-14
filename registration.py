@@ -98,10 +98,11 @@ class Registration(commands.Cog):
             await ctx.send("❌ You do not own this horse.")
             return
     
-        if horse["name"] is not None:
+        if horse["name"] is not None and horse["name"].strip() != "":
             await ctx.send("❌ This horse has already been claimed.")
             return
-    
+
+
         try:
             self.supabase.table("horses").update({
                 "name": name,
