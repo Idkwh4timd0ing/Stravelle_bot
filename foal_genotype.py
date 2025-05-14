@@ -412,9 +412,9 @@ def generate_foal_genotype(mare_genotype, stallion_genotype):
     
     foal_cream_gene = mare_cream_allele + stallion_cream_allele
     
-    if foal_cream_gene in ['crcr', 'cr']:
+    if foal_cream_gene == 'crcr' or foal_cream_gene == 'cr':
         foal_cream_gene = ""
-    elif foal_cream_gene in ['Crcr', 'crCr', 'Cr']:
+    elif foal_cream_gene == 'Crcr' or foal_cream_gene == 'crCr' or foal_cream_gene == 'Cr':
         foal_cream_gene = "Crcr"
     elif foal_cream_gene == 'CrCr':
         foal_cream_gene = "CrCr"
@@ -558,10 +558,10 @@ def generate_foal_genotype(mare_genotype, stallion_genotype):
     
     if foal_silver_gene == 'sisi' or foal_silver_gene == 'si':
         foal_silver_gene = ""
-    elif foal_grey_gene == 'Sisi' or foal_grey_gene == 'siSi' or foal_grey_gene == 'Si':
-        foal_grey_gene = "Sisi"
-    elif foal_grey_gene == 'SiSi':
-        foal_grey_gene = "SiSi"
+    elif foal_silver_gene == 'Sisi' or foal_silver_gene == 'siSi' or foal_silver_gene == 'Si':
+        foal_silver_gene = "Sisi"
+    elif foal_silver_gene == 'SiSi':
+        foal_silver_gene = "SiSi"
     
     
     # ========================
@@ -582,7 +582,7 @@ def generate_foal_genotype(mare_genotype, stallion_genotype):
     
     if foal_appy_gene == 'lplp' or foal_appy_gene == 'lp':
         foal_appy_gene = ""
-    elif foal_appy_gene in ['Lplp', 'lpLp', 'Lp']:
+    elif foal_grey_gene == 'Lplp' or foal_grey_gene == 'lpLp' or foal_grey_gene == 'Lp':
         foal_appy_gene = "Lplp"
     elif foal_appy_gene == 'LpLp':
         foal_appy_gene = "LpLp"
@@ -653,9 +653,9 @@ def generate_foal_genotype(mare_genotype, stallion_genotype):
     
     foal_overo_gene = mare_overo_allele + stallion_overo_allele
     
-    if foal_overo_gene in ['oo', 'o']:
+    if foal_overo_gene == 'oo' or foal_overo_gene == 'o':
         foal_overo_gene = ""
-    elif foal_overo_gene in ['Oo', 'oO', 'O']:
+    elif foal_overo_gene == 'Oo' or foal_overo_gene == 'oO' or foal_overo_gene == 'O':
         foal_overo_gene = "Oo"
     elif foal_overo_gene == 'OO':
         foal_overo_gene = "OO"
@@ -677,9 +677,9 @@ def generate_foal_genotype(mare_genotype, stallion_genotype):
     
     foal_sw_gene = mare_sw_allele + stallion_sw_allele
     
-    if foal_sw_gene in ['swsw', 'sw']:
+    if foal_sw_gene == 'swsw' or foal_sw_gene == 'sw':
         foal_sw_gene = ""
-    elif foal_sw_gene in ['Swsw', 'swSw', 'Sw']:
+    elif foal_sw_gene == 'Swsw' or foal_sw_gene == 'swSw' or foal_sw_gene == 'Sw':
         foal_sw_gene = "Swsw"
     elif foal_sw_gene == 'SwSw':
         foal_sw_gene = "SwSw"
@@ -701,9 +701,9 @@ def generate_foal_genotype(mare_genotype, stallion_genotype):
     
     foal_rb_gene = mare_rb_allele + stallion_rb_allele
     
-    if foal_rb_gene in ['rbrb', 'rb']:
+    if foal_rb_gene == 'rbrb' or foal_rb_gene == 'rb':
         foal_rb_gene = ""
-    elif foal_rb_gene in ['Rbrb', 'rbRb', 'Rb']:
+    elif foal_rb_gene == 'Rbrb' or foal_rb_gene == 'rbRb' or foal_rb_gene == 'Rb':
         foal_rb_gene = "Rbrb"
     elif foal_rb_gene == 'RbRb':
         foal_rb_gene = "RbRb"
