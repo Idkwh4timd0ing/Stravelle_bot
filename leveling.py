@@ -216,21 +216,32 @@ class ApproveXPView(View):
         self.horse_id = horse_id
         self.xp = xp
 
+    
     @discord.ui.button(label="✅ Approve", style=discord.ButtonStyle.success)
     async def approve(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.supabase.table("xp_submissions").update({"status": "approved"}).eq("id", self.submission_id).execute()
+    
         horse_data = self.supabase.table("horses").select("*").eq("horse_id", self.horse_id).execute()
-        if horse_data.data:
-            horse = horse_data.data[0]
-            new_xp = horse["xp"] + self.xp
-            self.supabase.table("horses").update({"xp": new_xp}).eq("horse_id", self.horse_id).execute()
-            await interaction.response.edit_message(content="✅ Submission approved and XP added.", view=None)
-            # Trigger level check
-            leveling_cog = self.bot.get_cog("Leveling")
-            if leveling_cog:
-                await leveling_cog.check_level_up(horse)
-        else:
+        if not horse_data.data:
             await interaction.response.send_message("❌ Horse not found.", ephemeral=True)
+            return
+    
+        horse = horse_data.data[0]
+        new_xp = horse["xp"] + self.xp
+    
+        # Update XP
+        self.supabase.table("horses").update({"xp": new_xp}).eq("horse_id", self.horse_id).execute()
+    
+        # ✅ Re-fetch horse with updated XP
+        updated_horse = self.supabase.table("horses").select("*").eq("horse_id", self.horse_id).execute().data[0]
+    
+        # 🔁 Check level-up
+        leveling_cog = self.bot.get_cog("Leveling")
+        if leveling_cog:
+            await leveling_cog.check_level_up(updated_horse)
+    
+        await interaction.response.edit_message(content="✅ Submission approved and XP added.", view=None)
+
 
     @discord.ui.button(label="❌ Deny", style=discord.ButtonStyle.danger)
     async def deny(self, interaction: discord.Interaction, button: discord.ui.Button):
