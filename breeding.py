@@ -4,6 +4,15 @@ from foal_genotype import generate_foal_genotype
 import random
 from datetime import datetime, timedelta
 
+def parse_isoformat_safe(s):
+    if "." in s:
+        date_part, micro = s.split(".")
+        micro = micro.rstrip("Z")  # remove Z if exists
+        micro = (micro + "000000")[:6]  # pad or truncate to 6 digits
+        s = f"{date_part}.{micro}"
+    return datetime.fromisoformat(s)
+
+
 def generate_foal_stats(dam_stats, sire_stats):
     # Moyennes de base
     avg_agility = (dam_stats["agility_genetic"] + sire_stats["agility_genetic"]) // 2
@@ -113,7 +122,7 @@ class Breeding(commands.Cog):
         last_breed_str = user.get("last_breed")
         if not ctx.author.guild_permissions.administrator:
             if last_breed_str:
-                last_breed = datetime.fromisoformat(last_breed_str)
+                last_breed = parse_isoformat_safe(last_breed_str)
                 if datetime.utcnow() - last_breed < timedelta(days=30):
                     await ctx.send("⏳ You can only breed once every 30 days.")
                     return
