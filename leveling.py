@@ -98,7 +98,10 @@ class XPQuestionnaireView(View):
             "status": "pending",
             "created_at": datetime.utcnow().isoformat()
         }).execute()
-        await interaction.response.edit_message(content=f"✅ Submission complete! Pending approval.\nXP earned: **{xp}**", view=None)
+        try:
+            await interaction.response.edit_message(content="✅ Submission approved and XP added.", view=None)
+        except discord.NotFound:
+            await interaction.followup.send("✅ Submission approved and XP added.", ephemeral=True)
 
     def calculate_xp(self):
         xp = 0
