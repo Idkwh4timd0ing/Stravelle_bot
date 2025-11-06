@@ -68,7 +68,6 @@ class HorseManagement(commands.Cog):
             color=0x9b59b6
         )
         embed.add_field(name="Sex", value=horse["sex"], inline=True)
-        embed.add_field(name="Registry", value=horse["registry"] or "—", inline=True)
         embed.add_field(name="Genotype", value=horse["genotype"], inline=False)
         embed.add_field(name="Dam", value=f"#{horse['dam_id']}" if horse["dam_id"] else "Unknown", inline=True)
         embed.add_field(name="Sire", value=f"#{horse['sire_id']}" if horse["sire_id"] else "Unknown", inline=True)
