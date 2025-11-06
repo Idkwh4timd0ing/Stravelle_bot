@@ -29,7 +29,6 @@ class Registration(commands.Cog):
                 "dam_id": None,
                 "sire_id": None,
                 "name": None,
-                "registry": None,
                 "ref_link": None,
                 "xp": 0,
                 "rank": "Registered"
@@ -75,11 +74,7 @@ class Registration(commands.Cog):
 
     
     @commands.command(name="claimhorse")
-    async def claim_horse(self, ctx, horse_id: int, name: str, registry: str, ref_link: str):
-        # Check registry validity
-        if registry.lower() not in ("realistic", "fantasy"):
-            await ctx.send("❌ Invalid registry. Choose either 'realistic' or 'fantasy'.")
-            return
+    async def claim_horse(self, ctx, horse_id: int, name: str, ref_link: str):
     
         if not ref_link.startswith("http"):
             await ctx.send("❌ Invalid reference link.")
@@ -106,11 +101,10 @@ class Registration(commands.Cog):
         try:
             self.supabase.table("horses").update({
                 "name": name,
-                "registry": registry.lower(),
                 "ref_link": ref_link
             }).eq("horse_id", horse_id).execute()
     
-            await ctx.send(f"✅ Horse #{horse_id} is now named **{name}** and placed in the **{registry}** registry!")
+            await ctx.send(f"✅ Horse #{horse_id} is now named **{name}**!")
         except Exception as e:
             print(f"Failed to claim horse: {e}")
             await ctx.send("❌ Something went wrong during claim.")
