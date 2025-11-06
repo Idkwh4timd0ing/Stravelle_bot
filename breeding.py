@@ -1,4 +1,5 @@
 import discord
+import discord
 from discord.ext import commands
 from foal_genotype import generate_foal_genotype
 import random
@@ -74,10 +75,6 @@ class Breeding(commands.Cog):
 
         if dam["sex"] != "F" or sire["sex"] != "M":
             await ctx.send("❌ Invalid pairing: the dam must be female and the sire must be male.")
-            return
-
-        if dam["registry"] != "realistic" or sire["registry"] != "realistic":
-            await ctx.send("❌ Both horses must be in the realistic registry to breed.")
             return
 
         if dam_id == sire["dam_id"] or dam_id == sire["sire_id"] or \
@@ -158,7 +155,6 @@ class Breeding(commands.Cog):
                 "genotype": foal_genotype,
                 "name": "",
                 "sex": sex,
-                "registry": None,
                 "ref_link": "",
                 "xp": 0,
                 "rank": "Registered",
